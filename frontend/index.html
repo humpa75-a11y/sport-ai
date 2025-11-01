@@ -163,20 +163,26 @@
 
         // Render Golden Tip
         function renderGoldenTip() {
+            console.log('renderGoldenTip called, matches:', allMatches.length);
             if (allMatches.length === 0) return;
 
-            // Find bet with highest EV
+            // Find bet with highest EV (no minimum threshold)
             let bestBet = null;
-            let bestEV = 0;
+            let bestEV = -999999; // Start with very low number
 
             allMatches.forEach(match => {
                 match.predictions.forEach(pred => {
-                    if (pred.ev_pct > bestEV && pred.confidence >= 0.5) {
-                        bestEV = pred.ev_pct;
+                    // Calculate score based on EV and confidence
+                    const score = pred.ev_pct + (pred.confidence * 100);
+                    const currentBestScore = bestBet ? (bestBet.prediction.ev_pct + (bestBet.prediction.confidence * 100)) : -999999;
+                    
+                    if (score > currentBestScore) {
                         bestBet = { match, prediction: pred };
                     }
                 });
             });
+
+            console.log('Best bet found:', bestBet);
 
             if (!bestBet) {
                 document.getElementById('golden-tip-content').innerHTML = 
@@ -392,6 +398,12 @@
                 const predResponse = await fetch(`${API_BASE}/api/predictions?league=${league}&days_ahead=${days}`);
                 const predData = await predResponse.json();
                 allMatches = predData.matches || [];
+
+                console.log('Loaded matches:', allMatches.length);
+                if (allMatches.length > 0) {
+                    console.log('Sample match:', allMatches[0]);
+                    console.log('Sample predictions:', allMatches[0].predictions);
+                }
 
                 // Load bankroll
                 const bankrollResponse = await fetch(`${API_BASE}/api/bankroll`);
