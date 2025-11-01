@@ -427,10 +427,15 @@ def professor_analyze():
         matches = predictions_cache.get('matches', [])
         
         if not matches:
-            # Fetch fresh
-            matches = aggregator_module.aggregate_all_sources()
-            if not matches:
+            # Fetch fresh using aggregator
+            aggregator = aggregator_module.MultiSourceAggregator()
+            df_matches = aggregator.get_matches_team_mode(league='bundesliga', days_ahead=3)
+            
+            if df_matches is None or df_matches.empty:
                 return jsonify({'error': 'No matches available'}), 404
+            
+            # Convert to list of dicts
+            matches = df_matches.to_dict('records')
         
         # Analyze with Professor Brain
         analyses = []
