@@ -154,6 +154,11 @@
                 });
             }
 
+            // Fallback to all scores if filters resulted in empty array
+            if (selectedScores.length === 0) {
+                selectedScores = [...scores];
+            }
+
             // Return top 3 most likely scores
             return selectedScores.slice(0, 3).map(s => ({
                 ...s,
@@ -166,33 +171,42 @@
             console.log('renderGoldenTip called, matches:', allMatches.length);
             if (allMatches.length === 0) return;
 
-            // Find bet with highest EV (no minimum threshold)
-            let bestBet = null;
-            let bestEV = -999999; // Start with very low number
+            try {
+                // Find bet with highest EV (no minimum threshold)
+                let bestBet = null;
+                let bestEV = -999999; // Start with very low number
 
-            allMatches.forEach(match => {
-                match.predictions.forEach(pred => {
-                    // Calculate score based on EV and confidence
-                    const score = pred.ev_pct + (pred.confidence * 100);
-                    const currentBestScore = bestBet ? (bestBet.prediction.ev_pct + (bestBet.prediction.confidence * 100)) : -999999;
-                    
-                    if (score > currentBestScore) {
-                        bestBet = { match, prediction: pred };
-                    }
+                allMatches.forEach(match => {
+                    match.predictions.forEach(pred => {
+                        // Calculate score based on EV and confidence
+                        const score = pred.ev_pct + (pred.confidence * 100);
+                        const currentBestScore = bestBet ? (bestBet.prediction.ev_pct + (bestBet.prediction.confidence * 100)) : -999999;
+                        
+                        if (score > currentBestScore) {
+                            bestBet = { match, prediction: pred };
+                        }
+                    });
                 });
-            });
 
-            console.log('Best bet found:', bestBet);
+                console.log('Best bet found:', bestBet);
 
-            if (!bestBet) {
-                document.getElementById('golden-tip-content').innerHTML = 
-                    '<p class="text-gray-500">Geen golden tips beschikbaar</p>';
-                return;
-            }
+                if (!bestBet) {
+                    document.getElementById('golden-tip-content').innerHTML = 
+                        '<p class="text-gray-500">Geen golden tips beschikbaar</p>';
+                    return;
+                }
 
-            const { match, prediction } = bestBet;
-            const scores = generateCorrectScore(match);
-            const predictedScore = scores[0].score;
+                const { match, prediction } = bestBet;
+                const scores = generateCorrectScore(match);
+                
+                if (!scores || scores.length === 0) {
+                    console.error('No scores generated for match');
+                    document.getElementById('golden-tip-content').innerHTML = 
+                        '<p class="text-gray-500">Fout bij genereren score</p>';
+                    return;
+                }
+                
+                const predictedScore = scores[0].score;
 
             document.getElementById('golden-tip-content').innerHTML = `
                 <div class="text-left">
@@ -228,6 +242,11 @@
                     </div>
                 </div>
             `;
+            } catch (error) {
+                console.error('Error in renderGoldenTip:', error);
+                document.getElementById('golden-tip-content').innerHTML = 
+                    `<p class="text-red-400">Error: ${error.message}</p>`;
+            }
         }
 
         // Render Monster Odds
