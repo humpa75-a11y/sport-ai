@@ -332,6 +332,25 @@ def log_bet():
         }), 400
 
 
+@app.route('/api/bet-builders')
+def get_bet_builders():
+    """Get featured matches with bet builder suggestions"""
+    try:
+        from backend.bet_builder_engine import get_featured_matches_with_builders
+        
+        matches = get_featured_matches_with_builders()
+        
+        return jsonify({
+            'timestamp': datetime.now().isoformat(),
+            'featured_matches': matches
+        })
+    
+    except Exception as e:
+        return jsonify({
+            'error': str(e)
+        }), 500
+
+
 @app.route('/api/ensemble', methods=['POST'])
 def get_ensemble_prediction():
     """Get ensemble prediction for a match"""

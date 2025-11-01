@@ -83,6 +83,14 @@
             </div>
         </div>
 
+        <!-- 🎲 BET BUILDERS - Featured Matches -->
+        <div class="mb-6 bg-gradient-to-br from-blue-900/30 to-purple-900/30 border-2 border-blue-500/50 rounded-lg p-4">
+            <h2 class="text-lg font-bold text-blue-400 mb-3">🎲 BET BUILDERS - Featured Matches</h2>
+            <div id="bet-builders" class="space-y-4">
+                <!-- Bet builders will load here -->
+            </div>
+        </div>
+
         <!-- 📋 ALL MATCHES -->
         <div class="bg-gray-900 border border-gray-700 rounded-lg p-4">
             <h2 class="text-lg font-bold text-gray-300 mb-3">📋 Alle Wedstrijden</h2>
@@ -421,6 +429,118 @@
             }).join('');
         }
 
+        // Render Bet Builders
+        async function renderBetBuilders() {
+            const container = document.getElementById('bet-builders');
+            
+            try {
+                const response = await fetch(`${API_BASE}/api/bet-builders`);
+                const data = await response.json();
+                const matches = data.featured_matches || [];
+                
+                if (matches.length === 0) {
+                    container.innerHTML = '<p class="text-gray-500">Geen bet builders beschikbaar</p>';
+                    return;
+                }
+                
+                container.innerHTML = matches.map(match => {
+                    const builders = match.bet_builders;
+                    
+                    return `
+                        <div class="bg-gray-800 rounded-lg p-4 border border-blue-500/30">
+                            <h3 class="font-bold text-xl text-white mb-3">${match.home_team} vs ${match.away_team}</h3>
+                            <p class="text-sm text-gray-400 mb-4">${new Date(match.match_date).toLocaleDateString('nl-NL')} • ${match.match_time}</p>
+                            
+                            <!-- Safe Builder -->
+                            <div class="mb-4 bg-green-900/20 border border-green-500/30 rounded p-3">
+                                <div class="flex justify-between items-start mb-2">
+                                    <div>
+                                        <h4 class="font-bold text-green-400">✅ ${builders.safe_builder.type}</h4>
+                                        <p class="text-xs text-gray-400">${builders.safe_builder.description}</p>
+                                    </div>
+                                    <div class="text-right">
+                                        <div class="text-2xl font-bold text-green-400">${builders.safe_builder.combined_odds}x</div>
+                                        <div class="text-xs text-gray-400">${(builders.safe_builder.combined_probability * 100).toFixed(0)}% chance</div>
+                                    </div>
+                                </div>
+                                <div class="grid grid-cols-2 gap-2 mb-2">
+                                    ${builders.safe_builder.selections.map(sel => `
+                                        <div class="bg-gray-900 rounded p-2 text-xs">
+                                            <div class="text-gray-400">${sel.market}</div>
+                                            <div class="font-bold text-white">${sel.selection}</div>
+                                            <div class="text-green-400">${sel.odds}x • ${(sel.probability * 100).toFixed(0)}%</div>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                                <div class="flex justify-between text-xs">
+                                    <span class="text-gray-400">Expected Value: <span class="text-green-400 font-bold">${builders.safe_builder.expected_value > 0 ? '+' : ''}${builders.safe_builder.expected_value}%</span></span>
+                                    <span class="text-gray-400">Stake: <span class="text-white font-bold">${builders.safe_builder.recommended_stake}</span></span>
+                                </div>
+                            </div>
+                            
+                            <!-- Value Builder -->
+                            <div class="mb-4 bg-yellow-900/20 border border-yellow-500/30 rounded p-3">
+                                <div class="flex justify-between items-start mb-2">
+                                    <div>
+                                        <h4 class="font-bold text-yellow-400">💰 ${builders.value_builder.type}</h4>
+                                        <p class="text-xs text-gray-400">${builders.value_builder.description}</p>
+                                    </div>
+                                    <div class="text-right">
+                                        <div class="text-2xl font-bold text-yellow-400">${builders.value_builder.combined_odds}x</div>
+                                        <div class="text-xs text-gray-400">${(builders.value_builder.combined_probability * 100).toFixed(0)}% chance</div>
+                                    </div>
+                                </div>
+                                <div class="grid grid-cols-2 gap-2 mb-2">
+                                    ${builders.value_builder.selections.map(sel => `
+                                        <div class="bg-gray-900 rounded p-2 text-xs">
+                                            <div class="text-gray-400">${sel.market}</div>
+                                            <div class="font-bold text-white">${sel.selection}</div>
+                                            <div class="text-yellow-400">${sel.odds}x • ${(sel.probability * 100).toFixed(0)}%</div>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                                <div class="flex justify-between text-xs">
+                                    <span class="text-gray-400">Expected Value: <span class="text-yellow-400 font-bold">${builders.value_builder.expected_value > 0 ? '+' : ''}${builders.value_builder.expected_value}%</span></span>
+                                    <span class="text-gray-400">Stake: <span class="text-white font-bold">${builders.value_builder.recommended_stake}</span></span>
+                                </div>
+                            </div>
+                            
+                            <!-- Monster Builder -->
+                            <div class="bg-red-900/20 border border-red-500/30 rounded p-3">
+                                <div class="flex justify-between items-start mb-2">
+                                    <div>
+                                        <h4 class="font-bold text-red-400">🔥 ${builders.monster_builder.type}</h4>
+                                        <p class="text-xs text-gray-400">${builders.monster_builder.description}</p>
+                                    </div>
+                                    <div class="text-right">
+                                        <div class="text-2xl font-bold text-red-400">${builders.monster_builder.combined_odds}x</div>
+                                        <div class="text-xs text-gray-400">${(builders.monster_builder.combined_probability * 100).toFixed(0)}% chance</div>
+                                    </div>
+                                </div>
+                                <div class="grid grid-cols-2 gap-2 mb-2">
+                                    ${builders.monster_builder.selections.map(sel => `
+                                        <div class="bg-gray-900 rounded p-2 text-xs">
+                                            <div class="text-gray-400">${sel.market}</div>
+                                            <div class="font-bold text-white">${sel.selection}</div>
+                                            <div class="text-red-400">${sel.odds}x • ${(sel.probability * 100).toFixed(0)}%</div>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                                <div class="flex justify-between text-xs">
+                                    <span class="text-gray-400">Expected Value: <span class="text-red-400 font-bold">${builders.monster_builder.expected_value > 0 ? '+' : ''}${builders.monster_builder.expected_value}%</span></span>
+                                    <span class="text-gray-400">Stake: <span class="text-white font-bold">${builders.monster_builder.recommended_stake}</span></span>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+                
+            } catch (error) {
+                console.error('Error loading bet builders:', error);
+                container.innerHTML = '<p class="text-red-400">Fout bij laden bet builders</p>';
+            }
+        }
+
         // Load all data
         async function loadData() {
             try {
@@ -451,6 +571,7 @@
                 renderGoldenTip();
                 renderMonsterOdds();
                 renderTop3();
+                renderBetBuilders();
                 renderAllMatches();
 
                 document.getElementById('last-update').textContent = new Date().toLocaleTimeString('nl-NL');
