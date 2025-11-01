@@ -36,6 +36,7 @@ from backend.market_roi_analyzer import MarketROIAnalyzer
 from backend.calibration_analyzer import CalibrationAnalyzer
 from backend.professor_brain import ProfessorBrain
 from backend.performance_analytics import get_analytics
+from backend.scraper_safety import get_safety
 
 # Initialize Flask app
 app = Flask(__name__)
@@ -52,6 +53,7 @@ roi_analyzer = MarketROIAnalyzer()
 calibration = CalibrationAnalyzer()
 professor = ProfessorBrain()  # 🧠 The AI Professor!
 analytics = get_analytics()  # 📊 Performance tracking!
+safety = get_safety()  # 🛡️ Safety checker!
 
 # Cache for predictions
 predictions_cache = {}
@@ -97,8 +99,25 @@ def api_home():
             'roi': '/api/roi',
             'alerts': '/api/alerts',
             'calibration': '/api/calibration',
-            'system_status': '/api/status'
+            'system_status': '/api/status',
+            'safety': '/api/safety',
+            'betting_warning': '/api/betting-warning'
         }
+    })
+
+
+@app.route('/api/safety')
+def safety_info():
+    """Get scraper safety configuration"""
+    return jsonify(safety.get_safe_config())
+
+
+@app.route('/api/betting-warning')
+def betting_warning():
+    """Get responsible gambling warning"""
+    return jsonify({
+        'warning': safety.get_betting_warning(),
+        'location_check': safety.check_user_location()
     })
 
 

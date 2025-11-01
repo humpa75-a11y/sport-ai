@@ -62,6 +62,9 @@ from datetime import datetime, timedelta
 import warnings
 warnings.filterwarnings("ignore")
 
+# Safety first!
+from backend.scraper_safety import get_safety
+
 # Import alle 6 data sources
 try:
     # Try relative imports first (when run as module)
@@ -92,6 +95,10 @@ class DataSourceTeam:
     
     def __init__(self):
         print("🤝 Initializing Data Source Team...")
+        
+        # 🛡️ Safety first!
+        self.safety = get_safety()
+        print("🛡️ Scraper Safety ACTIVE - Dutch bookmakers BLOCKED")
         
         # Premium APIs (rate limited)
         self.api_football = ApiSportsIntegration(api_key="eec52f29ffbc24effa9bc0e7963a8cd9")
