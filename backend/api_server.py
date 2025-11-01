@@ -1,4 +1,4 @@
-"""
+    """
 🚀 FLASK BACKEND API - Real-Time Betting System
 
 REST API endpoints voor dashboard:
@@ -223,15 +223,15 @@ def get_bankroll():
     stats = bankroll.get_statistics()
     
     return jsonify({
-        'current_bankroll': stats['current_bankroll'],
-        'initial_bankroll': stats['initial_bankroll'],
-        'total_bets': stats['total_bets'],
-        'wins': stats['wins'],
-        'losses': stats['losses'],
-        'win_rate': stats['win_rate'],
-        'roi': stats['roi'],
-        'total_staked': stats['total_staked'],
-        'total_profit': stats['total_profit']
+        'current_bankroll': stats.get('current_bankroll', 1000.0),
+        'initial_bankroll': stats.get('initial_bankroll', 1000.0),
+        'total_bets': stats.get('total_bets', 0),
+        'wins': stats.get('wins', 0),
+        'losses': stats.get('losses', 0),
+        'win_rate': stats.get('win_rate', 0.0),
+        'roi': stats.get('roi', 0.0),
+        'total_staked': stats.get('total_staked', 0.0),
+        'total_profit': stats.get('total_profit', 0.0)
     })
 
 
