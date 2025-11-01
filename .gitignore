@@ -1,0 +1,42 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Virtual Environment (NIET UPLOADEN - TE GROOT!)
+.venv/
+venv/
+env/
+ENV/
+
+# Data files
+*.csv
+*.pkl
+*.json
+!requirements.txt
+!package.json
+
+# Logs
+*.log
+
+# Screenshots en debug HTML
+*.png
+*.html
+!frontend/*.html
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Temp files
+*.tmp
+*.bak
+*.old
