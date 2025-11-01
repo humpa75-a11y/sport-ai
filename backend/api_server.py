@@ -14,7 +14,7 @@ Author: Sport AI Sync
 Date: November 2025
 """
 
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, send_from_directory
 from flask_cors import CORS
 from flask_socketio import SocketIO, emit
 import sys
@@ -60,7 +60,21 @@ last_update = None
 
 @app.route('/')
 def home():
-    """Home page"""
+    """Serve the frontend UI"""
+    frontend_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'frontend')
+    return send_from_directory(frontend_path, 'index.html')
+
+
+@app.route('/static/<path:filename>')
+def serve_static(filename):
+    """Serve static files (CSS, JS)"""
+    frontend_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'frontend', 'static')
+    return send_from_directory(frontend_path, filename)
+
+
+@app.route('/api')
+def api_home():
+    """API documentation"""
     return jsonify({
         'message': '🚀 Sport AI Sync - Intelligent Betting System API',
         'version': '3.0',
