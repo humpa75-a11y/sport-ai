@@ -1,4 +1,4 @@
-    """
+"""
 🚀 FLASK BACKEND API - Real-Time Betting System
 
 REST API endpoints voor dashboard:
