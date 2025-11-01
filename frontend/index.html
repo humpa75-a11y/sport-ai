@@ -28,10 +28,11 @@
             </div>
             <div class="flex items-center space-x-3 text-sm">
                 <div class="bg-gray-800 px-3 py-1 rounded">
-                    <span class="text-green-400 font-bold" id="bankroll">€1,000</span>
+                    <span class="text-blue-400">📊</span>
+                    <span class="text-gray-300 ml-1" id="matches-loaded">0 matches</span>
                 </div>
                 <div class="bg-gray-800 px-3 py-1 rounded">
-                    <span class="text-yellow-400" id="win-rate">0% win</span>
+                    <span class="text-yellow-400" id="win-rate">AI Ready</span>
                 </div>
                 <a href="/professor" class="bg-purple-600 hover:bg-purple-700 px-3 py-1 rounded text-xs font-bold">
                     🧠 Professor
@@ -64,7 +65,27 @@
             <span class="text-xs text-gray-500 ml-auto" id="last-update">Loading...</span>
         </div>
 
-        <!-- 💎 GOLDEN TIP - Top Value Bet -->
+        <!-- � QUICK STATS BAR -->
+        <div class="mb-4 grid grid-cols-2 md:grid-cols-4 gap-3">
+            <div class="bg-gradient-to-br from-blue-900/40 to-blue-800/20 border border-blue-500/30 rounded-lg p-3">
+                <div class="text-xs text-blue-300 mb-1">🎯 Value Bets</div>
+                <div class="text-xl font-bold text-blue-400" id="stat-value-bets">0</div>
+            </div>
+            <div class="bg-gradient-to-br from-green-900/40 to-green-800/20 border border-green-500/30 rounded-lg p-3">
+                <div class="text-xs text-green-300 mb-1">✅ High Confidence</div>
+                <div class="text-xl font-bold text-green-400" id="stat-high-conf">0</div>
+            </div>
+            <div class="bg-gradient-to-br from-purple-900/40 to-purple-800/20 border border-purple-500/30 rounded-lg p-3">
+                <div class="text-xs text-purple-300 mb-1">🔥 Monster Odds</div>
+                <div class="text-xl font-bold text-purple-400" id="stat-monster">0</div>
+            </div>
+            <div class="bg-gradient-to-br from-yellow-900/40 to-yellow-800/20 border border-yellow-500/30 rounded-lg p-3">
+                <div class="text-xs text-yellow-300 mb-1">⚡ Live Opportunities</div>
+                <div class="text-xl font-bold text-yellow-400" id="stat-live">ACTIVE</div>
+            </div>
+        </div>
+
+        <!-- �💎 GOLDEN TIP - Top Value Bet -->
         <div id="golden-tip" class="mb-6 bg-gradient-to-br from-yellow-900/40 to-yellow-800/20 border-2 border-yellow-500 rounded-lg p-4 pulse-gold">
             <div class="flex items-center justify-between mb-3">
                 <h2 class="text-lg font-bold text-yellow-400">💎 GOLDEN TIP</h2>
@@ -457,6 +478,41 @@
                     return `
                         <div class="bg-gray-800 rounded-lg p-4 border border-blue-500/30">
                             <h3 class="font-bold text-xl text-white mb-3">${match.home_team} vs ${match.away_team}</h3>
+
+        // Update Quick Stats
+        function updateQuickStats() {
+            // Count value bets (EV > 5%)
+            const valueBets = allMatches.filter(m => {
+                const preds = m.predictions;
+                return preds && (
+                    (preds['Match Result'] && preds['Match Result'].ev_pct > 5) ||
+                    (preds['Over/Under 2.5'] && preds['Over/Under 2.5'].ev_pct > 5) ||
+                    (preds['BTTS'] && preds['BTTS'].ev_pct > 5)
+                );
+            }).length;
+
+            // Count high confidence (>75%)
+            const highConf = allMatches.filter(m => {
+                const preds = m.predictions;
+                return preds && (
+                    (preds['Match Result'] && preds['Match Result'].confidence > 0.75) ||
+                    (preds['Over/Under 2.5'] && preds['Over/Under 2.5'].confidence > 0.75) ||
+                    (preds['BTTS'] && preds['BTTS'].confidence > 0.75)
+                );
+            }).length;
+
+            // Count monster odds (correct scores >10x)
+            const monster = allMatches.filter(m => {
+                const preds = m.predictions;
+                const cs = preds && preds['Correct Score'];
+                return cs && cs.odds && cs.odds > 10;
+            }).length;
+
+            // Update DOM
+            document.getElementById('stat-value-bets').textContent = valueBets;
+            document.getElementById('stat-high-conf').textContent = highConf;
+            document.getElementById('stat-monster').textContent = monster;
+        }
                             <p class="text-sm text-gray-400 mb-4">${new Date(match.match_date).toLocaleDateString('nl-NL')} • ${match.match_time}</p>
                             
                             <!-- Safe Builder -->
@@ -568,12 +624,12 @@
                     console.log('Sample predictions:', allMatches[0].predictions);
                 }
 
-                // Load bankroll
-                const bankrollResponse = await fetch(`${API_BASE}/api/bankroll`);
-                const bankrollData = await bankrollResponse.json();
-                
-                document.getElementById('bankroll').textContent = `€${bankrollData.current_bankroll.toFixed(0)}`;
-                document.getElementById('win-rate').textContent = `${(bankrollData.win_rate * 100).toFixed(0)}% win`;
+                // Update header with match count
+                document.getElementById('matches-loaded').textContent = `${allMatches.length} matches`;
+                document.getElementById('win-rate').textContent = `${allMatches.length > 0 ? 'AI Active ✅' : 'No matches'}`;
+
+                // Update quick stats
+                updateQuickStats();
 
                 // Render all sections
                 renderGoldenTip();
