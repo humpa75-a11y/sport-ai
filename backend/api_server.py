@@ -34,6 +34,8 @@ from backend.prediction_tracker import PredictionTracker
 from backend.odds_movement_monitor import OddsMovementMonitor
 from backend.market_roi_analyzer import MarketROIAnalyzer
 from backend.calibration_analyzer import CalibrationAnalyzer
+from backend.professor_brain import ProfessorBrain
+from backend.performance_analytics import get_analytics
 
 # Initialize Flask app
 app = Flask(__name__)
@@ -48,6 +50,8 @@ tracker = PredictionTracker()
 odds_monitor = OddsMovementMonitor()
 roi_analyzer = MarketROIAnalyzer()
 calibration = CalibrationAnalyzer()
+professor = ProfessorBrain()  # 🧠 The AI Professor!
+analytics = get_analytics()  # 📊 Performance tracking!
 
 # Cache for predictions
 predictions_cache = {}
@@ -70,6 +74,13 @@ def serve_static(filename):
     """Serve static files (CSS, JS)"""
     frontend_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'frontend', 'static')
     return send_from_directory(frontend_path, filename)
+
+
+@app.route('/professor')
+def professor_dashboard():
+    """Serve the Professor Brain dashboard"""
+    frontend_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'frontend')
+    return send_from_directory(frontend_path, 'professor.html')
 
 
 @app.route('/api')
@@ -394,6 +405,206 @@ def handle_subscribe():
     """Client subscribed to updates"""
     print('📡 Client subscribed to updates')
     emit('subscription_confirmed', {'status': 'subscribed'})
+
+
+# =============================================
+# 🧠 PROFESSOR BRAIN ENDPOINTS
+# =============================================
+
+@app.route('/api/professor/analyze')
+def professor_analyze():
+    """
+    Get Professor Brain analysis for matches
+    
+    Returns comprehensive analysis with:
+    - Multi-agent decisions
+    - Value opportunities
+    - Market inefficiencies
+    - Final recommendations
+    """
+    try:
+        # Get matches (use cache or fetch fresh)
+        matches = predictions_cache.get('matches', [])
+        
+        if not matches:
+            # Fetch fresh
+            matches = aggregator_module.aggregate_all_sources()
+            if not matches:
+                return jsonify({'error': 'No matches available'}), 404
+        
+        # Analyze with Professor Brain
+        analyses = []
+        for match in matches[:10]:  # Top 10 matches
+            try:
+                analysis = professor.analyze_match(
+                    match_data=match,
+                    bookmaker_odds=match.get('odds', {})
+                )
+                
+                # Add match info
+                analysis['match_info'] = {
+                    'home_team': match.get('home_team', 'Unknown'),
+                    'away_team': match.get('away_team', 'Unknown'),
+                    'league': match.get('league', 'Unknown'),
+                    'kickoff': match.get('kickoff_time', 'Unknown')
+                }
+                
+                analyses.append(analysis)
+                
+            except Exception as e:
+                print(f"Error analyzing match: {e}")
+                continue
+        
+        # Sort by recommendation strength
+        analyses.sort(
+            key=lambda x: x['final_recommendation']['consensus_strength'],
+            reverse=True
+        )
+        
+        return jsonify({
+            'analyses': analyses,
+            'total_analyzed': len(analyses),
+            'timestamp': datetime.now().isoformat()
+        })
+    
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/professor/learning-stats')
+def professor_learning_stats():
+    """Get Professor Brain learning statistics"""
+    try:
+        stats = professor.get_learning_stats()
+        return jsonify(stats)
+    
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/professor/retrain', methods=['POST'])
+def professor_retrain():
+    """Trigger manual retrain of Professor Brain models"""
+    try:
+        result = professor.online_learner.retrain_models()
+        return jsonify({
+            'success': True,
+            'result': result,
+            'timestamp': datetime.now().isoformat()
+        })
+    
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+# =============================================
+# 📊 PERFORMANCE ANALYTICS ENDPOINTS
+# =============================================
+
+@app.route('/api/analytics/overall')
+def analytics_overall():
+    """Get overall performance statistics"""
+    try:
+        stats = analytics.get_overall_stats()
+        return jsonify(stats)
+    
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/analytics/markets')
+def analytics_markets():
+    """Get performance by market"""
+    try:
+        market_perf = analytics.get_market_performance()
+        return jsonify(market_perf)
+    
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/analytics/timeseries')
+def analytics_timeseries():
+    """Get time series performance"""
+    try:
+        days = request.args.get('days', default=30, type=int)
+        timeseries = analytics.get_time_series_performance(days=days)
+        return jsonify(timeseries)
+    
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/analytics/calibration')
+def analytics_calibration():
+    """Get confidence calibration analysis"""
+    try:
+        calibration = analytics.get_confidence_calibration()
+        return jsonify(calibration)
+    
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/analytics/log-bet', methods=['POST'])
+def analytics_log_bet():
+    """Log a placed bet"""
+    try:
+        bet_data = request.get_json()
+        
+        # Validate required fields
+        required = ['match', 'market', 'selection', 'odds', 'stake']
+        if not all(field in bet_data for field in required):
+            return jsonify({'error': 'Missing required fields'}), 400
+        
+        analytics.log_bet(bet_data)
+        
+        return jsonify({
+            'success': True,
+            'message': 'Bet logged successfully',
+            'timestamp': datetime.now().isoformat()
+        })
+    
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/analytics/settle-bet', methods=['POST'])
+def analytics_settle_bet():
+    """Settle a bet with result"""
+    try:
+        data = request.get_json()
+        
+        # Validate
+        if 'bet_id' not in data or 'result' not in data or 'profit' not in data:
+            return jsonify({'error': 'Missing required fields'}), 400
+        
+        bet = analytics.settle_bet(
+            bet_id=data['bet_id'],
+            result=data['result'],
+            profit=data['profit']
+        )
+        
+        if bet:
+            # Also update Professor Brain learning
+            try:
+                professor.online_learner.update_with_result(
+                    prediction_id=data['bet_id'],
+                    actual_outcome=data['result']
+                )
+            except:
+                pass  # Non-critical
+            
+            return jsonify({
+                'success': True,
+                'bet': bet,
+                'timestamp': datetime.now().isoformat()
+            })
+        else:
+            return jsonify({'error': 'Bet not found'}), 404
+    
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 
 # =============================================
