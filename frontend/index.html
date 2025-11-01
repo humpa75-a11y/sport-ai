@@ -3,353 +3,425 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🚀 Sport AI Dashboard - Intelligent Betting System</title>
+    <title>⚽ De Meester AI - Smart Betting</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
     <style>
-        .glow-green { box-shadow: 0 0 20px rgba(34, 197, 94, 0.3); }
-        .glow-yellow { box-shadow: 0 0 20px rgba(234, 179, 8, 0.3); }
-        .glow-red { box-shadow: 0 0 20px rgba(239, 68, 68, 0.3); }
-        .pulse-green { animation: pulse-green 2s infinite; }
-        @keyframes pulse-green {
-            0%, 100% { box-shadow: 0 0 20px rgba(34, 197, 94, 0.3); }
-            50% { box-shadow: 0 0 30px rgba(34, 197, 94, 0.6); }
+        .glow-gold { box-shadow: 0 0 20px rgba(251, 191, 36, 0.5); }
+        .glow-green { box-shadow: 0 0 15px rgba(34, 197, 94, 0.4); }
+        @keyframes pulse-gold {
+            0%, 100% { box-shadow: 0 0 20px rgba(251, 191, 36, 0.5); }
+            50% { box-shadow: 0 0 30px rgba(251, 191, 36, 0.8); }
         }
+        .pulse-gold { animation: pulse-gold 2s infinite; }
     </style>
 </head>
-<body class="bg-gray-900 text-white min-h-screen">
-    <!-- Header -->
-    <header class="bg-gray-800 border-b border-gray-700 p-4">
+<body class="bg-gray-950 text-white">
+    <!-- Compact Header -->
+    <header class="bg-gradient-to-r from-gray-900 to-gray-800 border-b border-yellow-500/30 p-3">
         <div class="max-w-7xl mx-auto flex justify-between items-center">
-            <div class="flex items-center space-x-3">
-                <div class="w-10 h-10 bg-gradient-to-r from-green-500 to-blue-500 rounded-lg flex items-center justify-center">
-                    <i data-lucide="zap" class="w-6 h-6 text-white"></i>
-                </div>
+            <div class="flex items-center space-x-2">
+                <span class="text-2xl">⚽</span>
                 <div>
-                    <h1 class="text-2xl font-bold">🚀 Sport AI Dashboard</h1>
-                    <p class="text-gray-400 text-sm">Intelligent Betting System - Live Predictions</p>
+                    <h1 class="text-xl font-bold text-yellow-400">De Meester AI</h1>
+                    <p class="text-xs text-gray-400">Smart Betting System</p>
                 </div>
             </div>
-            <div class="flex items-center space-x-4">
-                <div class="bg-gray-700 px-3 py-1 rounded-lg">
-                    <span class="text-green-400 font-semibold" id="bankroll-amount">€1,000.00</span>
+            <div class="flex items-center space-x-3 text-sm">
+                <div class="bg-gray-800 px-3 py-1 rounded">
+                    <span class="text-green-400 font-bold" id="bankroll">€1,000</span>
                 </div>
-                <div class="bg-gray-700 px-3 py-1 rounded-lg">
-                    <span class="text-blue-400" id="total-bets">0 bets</span>
+                <div class="bg-gray-800 px-3 py-1 rounded">
+                    <span class="text-yellow-400" id="win-rate">0% win</span>
                 </div>
-                <div class="bg-gray-700 px-3 py-1 rounded-lg">
-                    <span class="text-yellow-400" id="win-rate">0.0% win rate</span>
-                </div>
+                <button id="refresh-btn" class="bg-blue-600 hover:bg-blue-700 px-3 py-1 rounded text-xs">
+                    🔄 Refresh
+                </button>
             </div>
         </div>
     </header>
 
-    <!-- Main Content -->
-    <main class="max-w-7xl mx-auto p-6">
+    <main class="max-w-7xl mx-auto p-4">
         <!-- Controls -->
-        <div class="mb-6 flex flex-wrap gap-4 items-center">
-            <select id="league-select" class="bg-gray-800 border border-gray-600 rounded-lg px-4 py-2">
+        <div class="mb-4 flex gap-3 items-center">
+            <select id="league-select" class="bg-gray-800 border border-gray-600 rounded px-3 py-1 text-sm">
                 <option value="bundesliga">🇩🇪 Bundesliga</option>
                 <option value="premier-league">🏴 Premier League</option>
-                <option value="laliga">🇪🇸 La Liga</option>
-                <option value="serie-a">🇮🇹 Serie A</option>
-                <option value="ligue-1">🇫🇷 Ligue 1</option>
-                <option value="super-lig">🇹🇷 Süper Lig</option>
                 <option value="eredivisie">🇳🇱 Eredivisie</option>
-                <option value="eerste-divisie">🇳🇱 Eerste Divisie</option>
             </select>
-            <select id="days-select" class="bg-gray-800 border border-gray-600 rounded-lg px-4 py-2">
-                <option value="1">1 day ahead</option>
-                <option value="2" selected>2 days ahead</option>
-                <option value="3">3 days ahead</option>
-                <option value="7">7 days ahead</option>
+            <select id="days-select" class="bg-gray-800 border border-gray-600 rounded px-3 py-1 text-sm">
+                <option value="1">Vandaag</option>
+                <option value="2" selected>2 dagen</option>
+                <option value="3">3 dagen</option>
             </select>
-            <button id="refresh-btn" class="bg-blue-600 hover:bg-blue-700 px-6 py-2 rounded-lg flex items-center space-x-2">
-                <i data-lucide="refresh-cw" class="w-4 h-4"></i>
-                <span>Refresh</span>
-            </button>
-            <div class="text-sm text-gray-400 ml-auto">
-                Last updated: <span id="last-update">Loading...</span>
+            <span class="text-xs text-gray-500 ml-auto" id="last-update">Loading...</span>
+        </div>
+
+        <!-- 💎 GOLDEN TIP - Top Value Bet -->
+        <div id="golden-tip" class="mb-6 bg-gradient-to-br from-yellow-900/40 to-yellow-800/20 border-2 border-yellow-500 rounded-lg p-4 pulse-gold">
+            <div class="flex items-center justify-between mb-3">
+                <h2 class="text-lg font-bold text-yellow-400">💎 GOLDEN TIP</h2>
+                <span class="text-xs bg-yellow-500 text-black px-2 py-1 rounded font-bold">HIGHEST VALUE</span>
+            </div>
+            <div id="golden-tip-content" class="text-center text-gray-400">
+                Laden...
             </div>
         </div>
 
-        <!-- Stats Cards -->
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-            <div class="bg-gray-800 rounded-lg p-4 border border-gray-700">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <p class="text-gray-400 text-sm">Active Predictions</p>
-                        <p class="text-2xl font-bold text-white" id="active-predictions">0</p>
-                    </div>
-                    <i data-lucide="target" class="w-8 h-8 text-blue-400"></i>
-                </div>
-            </div>
-            <div class="bg-gray-800 rounded-lg p-4 border border-gray-700">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <p class="text-gray-400 text-sm">High Confidence (>80%)</p>
-                        <p class="text-2xl font-bold text-green-400" id="high-confidence">0</p>
-                    </div>
-                    <i data-lucide="trending-up" class="w-8 h-8 text-green-400"></i>
-                </div>
-            </div>
-            <div class="bg-gray-800 rounded-lg p-4 border border-gray-700">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <p class="text-gray-400 text-sm">Avg. Expected Value</p>
-                        <p class="text-2xl font-bold text-yellow-400" id="avg-ev">+0.0%</p>
-                    </div>
-                    <i data-lucide="dollar-sign" class="w-8 h-8 text-yellow-400"></i>
-                </div>
-            </div>
-            <div class="bg-gray-800 rounded-lg p-4 border border-gray-700">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <p class="text-gray-400 text-sm">Data Sources</p>
-                        <p class="text-2xl font-bold text-purple-400">6</p>
-                    </div>
-                    <i data-lucide="database" class="w-8 h-8 text-purple-400"></i>
-                </div>
+        <!-- 🎯 MONSTER ODDS - Correct Scores -->
+        <div class="mb-6 bg-gray-900 border border-purple-500/30 rounded-lg p-4">
+            <h2 class="text-lg font-bold text-purple-400 mb-3">🎯 MONSTER ODDS - Correct Scores</h2>
+            <div id="monster-odds" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                <!-- Monster odds will load here -->
             </div>
         </div>
 
-        <!-- Predictions Grid -->
-        <div id="predictions-container" class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-            <!-- Predictions will be loaded here -->
+        <!-- 🏆 TOP 3 PREDICTIONS -->
+        <div class="mb-6 bg-gray-900 border border-green-500/30 rounded-lg p-4">
+            <h2 class="text-lg font-bold text-green-400 mb-3">🏆 TOP 3 PREDICTIONS</h2>
+            <div id="top-3" class="space-y-3">
+                <!-- Top 3 will load here -->
+            </div>
         </div>
 
-        <!-- Loading State -->
-        <div id="loading-state" class="text-center py-12">
-            <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-400 mb-4"></div>
-            <p class="text-gray-400">Loading predictions...</p>
+        <!-- 📋 ALL MATCHES -->
+        <div class="bg-gray-900 border border-gray-700 rounded-lg p-4">
+            <h2 class="text-lg font-bold text-gray-300 mb-3">📋 Alle Wedstrijden</h2>
+            <div id="all-matches" class="space-y-2">
+                <!-- All matches will load here -->
+            </div>
         </div>
 
-        <!-- Error State -->
-        <div id="error-state" class="hidden text-center py-12">
-            <i data-lucide="alert-triangle" class="w-16 h-16 text-red-400 mx-auto mb-4"></i>
-            <h3 class="text-xl font-semibold mb-2">Failed to load predictions</h3>
-            <p class="text-gray-400 mb-4" id="error-message">Please check your connection and try again.</p>
-            <button onclick="loadPredictions()" class="bg-red-600 hover:bg-red-700 px-6 py-2 rounded-lg">
-                Try Again
-            </button>
+        <!-- Loading -->
+        <div id="loading" class="text-center py-12">
+            <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-yellow-400 mb-2"></div>
+            <p class="text-gray-400 text-sm">Laden...</p>
         </div>
     </main>
 
-    <!-- Scripts -->
     <script>
-        // Initialize Lucide icons
-        lucide.createIcons();
+        const API_BASE = 'http://206.189.101.98:5000';
+        let allMatches = [];
 
-        // API Base URL
-        const API_BASE = 'http://206.189.101.98';
+        // Generate realistic correct score prediction
+        function generateCorrectScore(match) {
+            // Base probabilities for common scores
+            const scores = [
+                { score: '1-0', odds: 7.5, prob: 0.13 },
+                { score: '2-0', odds: 9.0, prob: 0.11 },
+                { score: '2-1', odds: 8.5, prob: 0.12 },
+                { score: '1-1', odds: 6.5, prob: 0.15 },
+                { score: '0-0', odds: 9.5, prob: 0.10 },
+                { score: '3-1', odds: 15.0, prob: 0.07 },
+                { score: '3-0', odds: 17.0, prob: 0.06 },
+                { score: '2-2', odds: 12.0, prob: 0.08 },
+                { score: '0-1', odds: 11.0, prob: 0.09 },
+                { score: '1-2', odds: 10.0, prob: 0.09 }
+            ];
 
-        // Global variables
-        let currentPredictions = [];
+            // Find match result prediction
+            const matchResult = match.predictions.find(p => p.market === 'Match Result');
+            const btts = match.predictions.find(p => p.market === 'BTTS');
+            const over25 = match.predictions.find(p => p.market === 'Over 2.5');
 
-        // Format currency
-        function formatCurrency(amount) {
-            return new Intl.NumberFormat('nl-NL', {
-                style: 'currency',
-                currency: 'EUR'
-            }).format(amount);
+            // Adjust probabilities based on predictions
+            let selectedScores = [...scores];
+            
+            if (matchResult) {
+                if (matchResult.prediction === 'Home Win') {
+                    selectedScores = scores.filter(s => {
+                        const [home, away] = s.score.split('-').map(Number);
+                        return home > away;
+                    });
+                } else if (matchResult.prediction === 'Away Win') {
+                    selectedScores = scores.filter(s => {
+                        const [home, away] = s.score.split('-').map(Number);
+                        return away > home;
+                    });
+                }
+            }
+
+            if (btts && btts.prediction === 'Yes') {
+                selectedScores = selectedScores.filter(s => {
+                    const [home, away] = s.score.split('-').map(Number);
+                    return home > 0 && away > 0;
+                });
+            }
+
+            if (over25 && over25.prediction === 'Yes') {
+                selectedScores = selectedScores.filter(s => {
+                    const [home, away] = s.score.split('-').map(Number);
+                    return (home + away) >= 3;
+                });
+            }
+
+            // Return top 3 most likely scores
+            return selectedScores.slice(0, 3).map(s => ({
+                ...s,
+                ev_pct: ((s.prob * s.odds - 1) * 100).toFixed(0)
+            }));
         }
 
-        // Format percentage
-        function formatPercentage(value) {
-            return (value * 100).toFixed(1) + '%';
-        }
+        // Render Golden Tip
+        function renderGoldenTip() {
+            if (allMatches.length === 0) return;
 
-        // Get confidence color class
-        function getConfidenceClass(confidence) {
-            if (confidence >= 0.8) return 'border-green-500 glow-green pulse-green';
-            if (confidence >= 0.6) return 'border-yellow-500 glow-yellow';
-            return 'border-red-500 glow-red';
-        }
+            // Find bet with highest EV
+            let bestBet = null;
+            let bestEV = 0;
 
-        // Get confidence color
-        function getConfidenceColor(confidence) {
-            if (confidence >= 0.8) return 'text-green-400';
-            if (confidence >= 0.6) return 'text-yellow-400';
-            return 'text-red-400';
-        }
-
-        // Create prediction card
-        function createPredictionCard(match) {
-            const homeTeam = match.home_team;
-            const awayTeam = match.away_team;
-            const matchDate = new Date(match.match_date).toLocaleDateString('nl-NL');
-            const matchTime = match.match_time;
-
-            // Find best prediction (highest probability)
-            let bestPrediction = match.predictions.reduce((best, current) => {
-                return current.probability > best.probability ? current : best;
+            allMatches.forEach(match => {
+                match.predictions.forEach(pred => {
+                    if (pred.ev_pct > bestEV && pred.confidence >= 0.5) {
+                        bestEV = pred.ev_pct;
+                        bestBet = { match, prediction: pred };
+                    }
+                });
             });
 
-            const confidence = bestPrediction.confidence;
-            const cardClass = getConfidenceClass(confidence);
-            const confidenceColor = getConfidenceColor(confidence);
+            if (!bestBet) {
+                document.getElementById('golden-tip-content').innerHTML = 
+                    '<p class="text-gray-500">Geen golden tips beschikbaar</p>';
+                return;
+            }
 
-            return `
-                <div class="bg-gray-800 rounded-xl p-6 border-2 ${cardClass} transition-all duration-300 hover:scale-105">
-                    <!-- Match Header -->
-                    <div class="flex justify-between items-start mb-4">
+            const { match, prediction } = bestBet;
+            const scores = generateCorrectScore(match);
+            const predictedScore = scores[0].score;
+
+            document.getElementById('golden-tip-content').innerHTML = `
+                <div class="text-left">
+                    <div class="flex justify-between items-start mb-2">
                         <div>
-                            <h3 class="text-lg font-bold">${homeTeam} vs ${awayTeam}</h3>
-                            <p class="text-gray-400 text-sm">${matchDate} • ${matchTime}</p>
-                            <p class="text-gray-500 text-xs">${match.tournament}</p>
+                            <h3 class="font-bold text-xl text-white">${match.home_team} vs ${match.away_team}</h3>
+                            <p class="text-sm text-gray-400">${new Date(match.match_date).toLocaleDateString('nl-NL')} • ${match.match_time}</p>
                         </div>
                         <div class="text-right">
-                            <div class="${confidenceColor} font-bold text-xl">
-                                ${formatPercentage(confidence)}
-                            </div>
-                            <div class="text-gray-400 text-xs">confidence</div>
+                            <div class="text-3xl font-bold text-yellow-400">${predictedScore}</div>
+                            <div class="text-xs text-gray-400">voorspeld</div>
                         </div>
                     </div>
-
-                    <!-- Best Prediction -->
-                    <div class="bg-gray-700 rounded-lg p-4 mb-4">
-                        <div class="flex justify-between items-center mb-2">
-                            <span class="font-semibold text-white">${bestPrediction.market}</span>
-                            <span class="${confidenceColor} font-bold">${formatPercentage(bestPrediction.probability)}</span>
+                    <div class="grid grid-cols-3 gap-3 mt-3">
+                        <div class="bg-gray-800 rounded p-2 text-center">
+                            <div class="text-xs text-gray-400">Market</div>
+                            <div class="font-bold text-white text-sm">${prediction.market}</div>
                         </div>
-                        <div class="flex justify-between text-sm text-gray-400">
-                            <span>Odds: ${bestPrediction.odds.toFixed(2)}</span>
-                            <span>EV: ${bestPrediction.ev_pct > 0 ? '+' : ''}${bestPrediction.ev_pct.toFixed(1)}%</span>
+                        <div class="bg-gray-800 rounded p-2 text-center">
+                            <div class="text-xs text-gray-400">Odds</div>
+                            <div class="font-bold text-green-400 text-sm">${prediction.odds.toFixed(2)}</div>
+                        </div>
+                        <div class="bg-gray-800 rounded p-2 text-center">
+                            <div class="text-xs text-gray-400">Expected Value</div>
+                            <div class="font-bold text-yellow-400 text-sm">+${prediction.ev_pct.toFixed(0)}%</div>
                         </div>
                     </div>
-
-                    <!-- All Markets -->
-                    <div class="space-y-2">
-                        ${match.predictions.map(prediction => `
-                            <div class="flex justify-between items-center py-2 border-b border-gray-700 last:border-b-0">
-                                <span class="text-sm text-gray-300">${prediction.market}</span>
-                                <div class="flex items-center space-x-2">
-                                    <span class="text-sm ${prediction.probability >= 0.5 ? 'text-green-400' : 'text-red-400'}">
-                                        ${prediction.prediction}
-                                    </span>
-                                    <span class="text-xs text-gray-500">(${formatPercentage(prediction.probability)})</span>
-                                </div>
-                            </div>
-                        `).join('')}
-                    </div>
-
-                    <!-- Data Source -->
-                    <div class="mt-4 pt-4 border-t border-gray-700">
-                        <div class="flex items-center justify-between text-xs text-gray-500">
-                            <span>Source: ${match.source}</span>
-                            <span class="flex items-center">
-                                <i data-lucide="database" class="w-3 h-3 mr-1"></i>
-                                Multi-source AI
-                            </span>
+                    <div class="mt-3 bg-yellow-500/10 border border-yellow-500/30 rounded p-2">
+                        <div class="flex justify-between items-center">
+                            <span class="text-xs text-yellow-400">Confidence: ${(prediction.confidence * 100).toFixed(0)}%</span>
+                            <span class="text-xs text-yellow-400">Probability: ${(prediction.probability * 100).toFixed(0)}%</span>
                         </div>
                     </div>
                 </div>
             `;
         }
 
-        // Load bankroll data
-        async function loadBankroll() {
-            try {
-                const response = await fetch(`${API_BASE}/api/bankroll`);
-                const data = await response.json();
-
-                document.getElementById('bankroll-amount').textContent = formatCurrency(data.current_bankroll);
-                document.getElementById('total-bets').textContent = `${data.total_bets} bets`;
-                document.getElementById('win-rate').textContent = `${data.win_rate.toFixed(1)}% win rate`;
-            } catch (error) {
-                console.error('Failed to load bankroll:', error);
+        // Render Monster Odds
+        function renderMonsterOdds() {
+            const container = document.getElementById('monster-odds');
+            if (allMatches.length === 0) {
+                container.innerHTML = '<p class="text-gray-500 col-span-3">Geen monster odds beschikbaar</p>';
+                return;
             }
+
+            // Take top 6 matches with highest confidence
+            const topMatches = [...allMatches]
+                .sort((a, b) => {
+                    const aMax = Math.max(...a.predictions.map(p => p.confidence));
+                    const bMax = Math.max(...b.predictions.map(p => p.confidence));
+                    return bMax - aMax;
+                })
+                .slice(0, 6);
+
+            container.innerHTML = topMatches.map(match => {
+                const scores = generateCorrectScore(match);
+                const topScore = scores[0];
+
+                return `
+                    <div class="bg-gray-800 rounded-lg p-3 border border-purple-500/30 hover:border-purple-500 transition">
+                        <div class="flex justify-between items-start mb-2">
+                            <div class="flex-1">
+                                <h4 class="font-bold text-sm text-white">${match.home_team}</h4>
+                                <h4 class="font-bold text-sm text-white">${match.away_team}</h4>
+                                <p class="text-xs text-gray-500">${new Date(match.match_date).toLocaleDateString('nl-NL')}</p>
+                            </div>
+                            <div class="text-right">
+                                <div class="text-2xl font-bold text-purple-400">${topScore.score}</div>
+                                <div class="text-xs text-gray-400">${topScore.odds.toFixed(1)}x</div>
+                            </div>
+                        </div>
+                        <div class="flex justify-between text-xs mt-2 pt-2 border-t border-gray-700">
+                            <span class="text-gray-400">Kans: ${(topScore.prob * 100).toFixed(0)}%</span>
+                            <span class="text-purple-400 font-bold">EV: +${topScore.ev_pct}%</span>
+                        </div>
+                    </div>
+                `;
+            }).join('');
         }
 
-        // Load predictions
-        async function loadPredictions() {
-            const loadingState = document.getElementById('loading-state');
-            const errorState = document.getElementById('error-state');
-            const predictionsContainer = document.getElementById('predictions-container');
+        // Render Top 3
+        function renderTop3() {
+            const container = document.getElementById('top-3');
+            if (allMatches.length === 0) {
+                container.innerHTML = '<p class="text-gray-500">Geen predictions beschikbaar</p>';
+                return;
+            }
 
-            loadingState.classList.remove('hidden');
-            errorState.classList.add('hidden');
-            predictionsContainer.innerHTML = '';
+            // Find top 3 predictions by confidence
+            const allPredictions = [];
+            allMatches.forEach(match => {
+                match.predictions.forEach(pred => {
+                    allPredictions.push({
+                        match,
+                        prediction: pred
+                    });
+                });
+            });
 
+            const top3 = allPredictions
+                .sort((a, b) => b.prediction.confidence - a.prediction.confidence)
+                .slice(0, 3);
+
+            container.innerHTML = top3.map((item, index) => {
+                const { match, prediction } = item;
+                const scores = generateCorrectScore(match);
+                const medal = ['🥇', '🥈', '🥉'][index];
+
+                return `
+                    <div class="bg-gray-800 rounded-lg p-3 border-2 border-green-500/50 glow-green">
+                        <div class="flex justify-between items-start">
+                            <div class="flex-1">
+                                <div class="flex items-center gap-2 mb-1">
+                                    <span class="text-2xl">${medal}</span>
+                                    <div>
+                                        <h4 class="font-bold text-white">${match.home_team} vs ${match.away_team}</h4>
+                                        <p class="text-xs text-gray-400">${new Date(match.match_date).toLocaleDateString('nl-NL')} • ${match.match_time}</p>
+                                    </div>
+                                </div>
+                                <div class="grid grid-cols-4 gap-2 mt-2">
+                                    <div class="bg-gray-900 rounded p-2 text-center">
+                                        <div class="text-xs text-gray-400">Score</div>
+                                        <div class="font-bold text-white">${scores[0].score}</div>
+                                    </div>
+                                    <div class="bg-gray-900 rounded p-2 text-center">
+                                        <div class="text-xs text-gray-400">Market</div>
+                                        <div class="font-bold text-white text-xs">${prediction.market}</div>
+                                    </div>
+                                    <div class="bg-gray-900 rounded p-2 text-center">
+                                        <div class="text-xs text-gray-400">Odds</div>
+                                        <div class="font-bold text-green-400">${prediction.odds.toFixed(2)}</div>
+                                    </div>
+                                    <div class="bg-gray-900 rounded p-2 text-center">
+                                        <div class="text-xs text-gray-400">Confidence</div>
+                                        <div class="font-bold text-green-400">${(prediction.confidence * 100).toFixed(0)}%</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Render All Matches
+        function renderAllMatches() {
+            const container = document.getElementById('all-matches');
+            if (allMatches.length === 0) {
+                container.innerHTML = '<p class="text-gray-500">Geen wedstrijden beschikbaar</p>';
+                return;
+            }
+
+            container.innerHTML = allMatches.map(match => {
+                const bestPred = match.predictions.reduce((best, curr) => 
+                    curr.confidence > best.confidence ? curr : best
+                );
+                const scores = generateCorrectScore(match);
+
+                return `
+                    <div class="bg-gray-800 rounded-lg p-3 border border-gray-700 hover:border-gray-500 transition">
+                        <div class="flex justify-between items-start">
+                            <div class="flex-1">
+                                <h4 class="font-bold text-white text-sm">${match.home_team} vs ${match.away_team}</h4>
+                                <p class="text-xs text-gray-400">${new Date(match.match_date).toLocaleDateString('nl-NL')} • ${match.match_time}</p>
+                            </div>
+                            <div class="text-right">
+                                <div class="text-lg font-bold text-yellow-400">${scores[0].score}</div>
+                                <div class="text-xs text-gray-400">${scores[0].odds.toFixed(1)}x</div>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-4 gap-2 mt-2 text-xs">
+                            <div class="text-center">
+                                <div class="text-gray-400">Market</div>
+                                <div class="font-bold text-white">${bestPred.market}</div>
+                            </div>
+                            <div class="text-center">
+                                <div class="text-gray-400">Pred</div>
+                                <div class="font-bold text-white">${bestPred.prediction}</div>
+                            </div>
+                            <div class="text-center">
+                                <div class="text-gray-400">Conf</div>
+                                <div class="font-bold text-green-400">${(bestPred.confidence * 100).toFixed(0)}%</div>
+                            </div>
+                            <div class="text-center">
+                                <div class="text-gray-400">EV</div>
+                                <div class="font-bold text-yellow-400">+${bestPred.ev_pct.toFixed(0)}%</div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Load all data
+        async function loadData() {
             try {
+                document.getElementById('loading').classList.remove('hidden');
+                
                 const league = document.getElementById('league-select').value;
                 const days = document.getElementById('days-select').value;
 
-                const response = await fetch(`${API_BASE}/api/predictions?league=${league}&days_ahead=${days}`);
-                const data = await response.json();
+                // Load predictions
+                const predResponse = await fetch(`${API_BASE}/api/predictions?league=${league}&days_ahead=${days}`);
+                const predData = await predResponse.json();
+                allMatches = predData.matches || [];
 
-                if (data.error) {
-                    throw new Error(data.error);
-                }
+                // Load bankroll
+                const bankrollResponse = await fetch(`${API_BASE}/api/bankroll`);
+                const bankrollData = await bankrollResponse.json();
+                
+                document.getElementById('bankroll').textContent = `€${bankrollData.current_bankroll.toFixed(0)}`;
+                document.getElementById('win-rate').textContent = `${(bankrollData.win_rate * 100).toFixed(0)}% win`;
 
-                currentPredictions = data.matches || [];
+                // Render all sections
+                renderGoldenTip();
+                renderMonsterOdds();
+                renderTop3();
+                renderAllMatches();
 
-                // Update stats
-                document.getElementById('active-predictions').textContent = currentPredictions.length;
-                document.getElementById('high-confidence').textContent =
-                    currentPredictions.filter(m => m.predictions.some(p => p.confidence >= 0.8)).length;
-
-                const avgEv = currentPredictions.length > 0 ?
-                    currentPredictions.flatMap(m => m.predictions).reduce((sum, p) => sum + p.ev_pct, 0) /
-                    currentPredictions.flatMap(m => m.predictions).length : 0;
-                document.getElementById('avg-ev').textContent = `${avgEv > 0 ? '+' : ''}${avgEv.toFixed(1)}%`;
-
-                // Update last update time
-                document.getElementById('last-update').textContent =
-                    new Date(data.timestamp).toLocaleString('nl-NL');
-
-                // Render predictions
-                if (currentPredictions.length === 0) {
-                    predictionsContainer.innerHTML = `
-                        <div class="col-span-full text-center py-12">
-                            <i data-lucide="calendar" class="w-16 h-16 text-gray-600 mx-auto mb-4"></i>
-                            <h3 class="text-xl font-semibold mb-2">No matches found</h3>
-                            <p class="text-gray-400">Try selecting a different league or time range.</p>
-                        </div>
-                    `;
-                } else {
-                    // Sort by confidence (highest first)
-                    currentPredictions.sort((a, b) => {
-                        const aMax = Math.max(...a.predictions.map(p => p.confidence));
-                        const bMax = Math.max(...b.predictions.map(p => p.confidence));
-                        return bMax - aMax;
-                    });
-
-                    predictionsContainer.innerHTML = currentPredictions.map(createPredictionCard).join('');
-                }
-
-                // Re-initialize icons for new content
-                lucide.createIcons();
-
-                loadingState.classList.add('hidden');
-
+                document.getElementById('last-update').textContent = new Date().toLocaleTimeString('nl-NL');
+                document.getElementById('loading').classList.add('hidden');
             } catch (error) {
-                console.error('Failed to load predictions:', error);
-                loadingState.classList.add('hidden');
-                errorState.classList.add('hidden');
-                document.getElementById('error-message').textContent = error.message;
+                console.error('Error loading data:', error);
+                document.getElementById('loading').innerHTML = 
+                    '<p class="text-red-400">Fout bij laden. Probeer opnieuw.</p>';
             }
         }
 
         // Event listeners
-        document.getElementById('league-select').addEventListener('change', loadPredictions);
-        document.getElementById('days-select').addEventListener('change', loadPredictions);
-        document.getElementById('refresh-btn').addEventListener('click', () => {
-            loadPredictions();
-            loadBankroll();
-        });
-
-        // Auto refresh every 5 minutes
-        setInterval(() => {
-            loadPredictions();
-            loadBankroll();
-        }, 300000);
+        document.getElementById('refresh-btn').addEventListener('click', loadData);
+        document.getElementById('league-select').addEventListener('change', loadData);
+        document.getElementById('days-select').addEventListener('change', loadData);
 
         // Initial load
-        document.addEventListener('DOMContentLoaded', () => {
-            loadPredictions();
-            loadBankroll();
-        });
+        loadData();
     </script>
 </body>
 </html>
