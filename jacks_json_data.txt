@@ -1,0 +1,125 @@
+window.customWidgetSettings = {
+  "widgets": [
+    {
+      "widgetId": "vaix_landing_widget_top",
+      "widgetType": "web-component",
+      "tag": "vaix-landing-widget-top"
+    },
+    {
+      "widgetId": "vaix_landing_widget",
+      "widgetType": "web-component",
+      "tag": "vaix-landing-widget"
+    },
+    {
+      "widgetId": "vaix_betslip_widget",
+      "widgetType": "web-component",
+      "tag": "vaix-betslip-widget"
+    },
+    {
+      "widgetId": "vaix_nav_panel_widget",
+      "widgetType": "web-component",
+      "tag": "vaix-nav-panel-widget"
+    },
+    {
+      "widgetId": "vaix_event_group_widget",
+      "widgetType": "web-component",
+      "tag": "vaix-event-group-widget"
+    },
+    {
+      "widgetId": "vaix_social_widget",
+      "widgetType": "web-component",
+      "tag": "vaix-social-widget"
+    },
+    {
+      "widgetId": "vaix_event_widget",
+      "widgetType": "web-component",
+      "tag": "vaix-event-widget"
+    },
+    {
+      "widgetId": "vaix_tinder_widget",
+      "widgetType": "web-component",
+      "tag": "vaix-tinder-widget"
+    },
+    {
+      "widgetId": "vaix_tinder_widget_new",
+      "widgetType": "web-component",
+      "tag": "vaix-tinder-widget-new"
+    },
+    {
+      "widgetId": "vaix_smart_search_widget",
+      "widgetType": "web-component",
+      "tag": "vaix-smart-search-widget"
+    },
+    {
+      "widgetId": "vaix_filter_hub_widget_top",
+      "widgetType": "web-component",
+      "tag": "vaix-filter-hub-widget-top"
+    },
+    {
+      "widgetId": "vaix_event_widget_top",
+      "widgetType": "web-component",
+      "tag": "vaix-event-widget-top"
+    },
+    {
+      "widgetId": "vaix_landing_widget_sports_az",
+      "widgetType": "web-component",
+      "tag": "vaix-landing-widget-sports-az"
+    }
+  ],
+  "targets": {
+    "coreUxWidgetTop": [
+      {
+        "order": "top",
+        "widgetId": "vaix_landing_widget_top"
+      }
+    ],
+    "coreUxWidgetBetweenSections2": [
+      {
+        "order": "top",
+        "widgetId": "vaix_landing_widget"
+      }
+    ],
+    "betslipMain": [
+      {
+        "order": "bottom",
+        "widgetId": "vaix_betslip_widget"
+      }
+    ],
+    "betslipReceipt": [
+      {
+        "order": "bottom",
+        "widgetId": "vaix_social_widget"
+      }
+    ],
+    "sandwichFilterLiveRightNowAboveMenu": [
+      {
+        "order": "top",
+        "widgetId": "vaix_event_group_widget"
+      }
+    ],
+    "eventBottom": [
+      {
+        "order": "bottom",
+        "widgetId": "vaix_event_widget"
+      }
+    ],
+    "sandwichFilterSportsHubAboveMenu": [
+      {
+        "order": "top",
+        "widgetId": "vaix_filter_hub_widget_top"
+      }
+    ],
+    "eventTop": [
+      {
+        "order": "top",
+        "widgetId": "vaix_event_widget_top"
+      }
+    ],
+    "sportsAzAbovePopular": [
+      {
+        "order": "top",
+        "widgetId": "vaix_landing_widget_sports_az"
+      }
+    ]
+  }
+};

@@ -1,42 +1,104 @@
-# Python
+# Python build artifacts
 __pycache__/
 *.py[cod]
 *$py.class
 *.so
-.Python
+build/
+dist/
+*.egg-info/
 
-# Virtual Environment (NIET UPLOADEN - TE GROOT!)
+# Virtual Environments
 .venv/
 venv/
-env/
 ENV/
+env/
 
-# Data files
-*.csv
-*.pkl
-*.json
-!requirements.txt
-!package.json
+# Node.js dependencies
+node_modules/
+package-lock.json
+yarn-error.log
 
-# Logs
-*.log
-
-# Screenshots en debug HTML
-*.png
-*.html
-!frontend/*.html
-
-# OS files
-.DS_Store
-Thumbs.db
-
-# IDE
+# IDE & Editor files
 .vscode/
 .idea/
 *.swp
 *.swo
 
-# Temp files
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Log, data, and temporary files
+*.log
 *.tmp
 *.bak
-*.old
+*.csv
+*.json
+*.html
+*.png
+*.md
+*.txt
+*.bat
+*.sh
+
+# Allow specific files
+!README.md
+!requirements.txt
+!package.json
+!frontend/index.html
+!jest.config.cjs
+
+# Embedded repository (beter als submodule, maar voor nu negeren)
+odds-portal-scraper/
+
+# Test and utility scripts (die niet in productie horen)
+scripts/
+bookmaker_scraper/
+data/
+toto_api_captures/
+ultimate_scraper/
+API_RECOMMENDATIONS.py
+DATA_HUNTING_GUIDE.py
+HOW_TO_USE.py
+SCORE_PREDICTION_GUIDE.py
+TEAM_STATUS_GUIDE.py
+accuracy_reality_check.py
+auto_data_collector.py
+auto_learn_daily.py
+check_api_inventory.py
+check_data.py
+check_learning_progress.py
+check_oude_bron.py
+check_oude_csv.py
+compare_improvement.py
+continuous_learning.py
+create_dummy_model.py
+daily_auto_train.py
+debug_test.py
+deep_api_research.py
+demo_*.py
+dutch_bookmakers_scraper.py
+eerste_divisie_*.py
+extract_unibet_matches.py
+find_bruikbare_data.py
+fix_dummy_model.py
+full_system_check.py
+import_results_to_ai.py
+init_continuous_learning.py
+intelligent_betting_system.py
+mega_data_harvester.py
+production_test.py
+research_free_football_apis.py
+result_checker.py
+result_checker_LIVE.py
+run_complete_system.py
+run_everything.py
+scrap_status.py
+scrape_flashscore_*.py
+setup_production.py
+showcase_massive_training.py
+smart_learn.py
+test_*.py
+train_*.py
+ultimate_dashboard.py
+FUSION_MASTER.py

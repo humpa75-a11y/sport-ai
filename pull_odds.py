@@ -1,32 +1,34 @@
-import os
 import requests
 import pandas as pd
-from tabulate import tabulate
+import os
 from dotenv import load_dotenv
 
-# Laad .env variabelen
+# ✅ Laad .env
 load_dotenv()
-APIFY_TOKEN = os.getenv("APIFY_TOKEN")
-DATASET_ID = os.getenv("DATASET_ID")
 
-BASE = f"https://api.apify.com/v2/datasets/{DATASET_ID}/items"
-params = {"clean": "true", "format": "json"}
-headers = {}
-if APIFY_TOKEN:
-    headers["Authorization"] = f"Bearer {APIFY_TOKEN}"
+# ✅ Haal de API key op
+API_KEY = os.getenv("ODDS_API_KEY")
 
-print("🔄 Data ophalen van Apify...")
+# ✅ URL van Odds API
+url = "https://api.the-odds-api.com/v4/sports/soccer_epl/odds"
 
-resp = requests.get(BASE, params=params, headers=headers, timeout=30)
-resp.raise_for_status()
-items = resp.json()
+# ✅ Parameters + KEY in de URL (zoals Odds-API het verwacht)
+params = {
+    'regions': 'eu',
+    'markets': 'h2h',
+    'oddsFormat': 'decimal',
+    'apiKey': API_KEY  # 👉 deze moet zo in de params
+}
 
-if not items:
-    print("⚠️ Geen resultaten gevonden.")
-    exit(0)
+# ✅ Stuur verzoek
+print("🔄 Data ophalen van The Odds API...")
+response = requests.get(url, params=params)
 
-df = pd.DataFrame(items)[["id", "home", "away", "time", "league"]]
-print(tabulate(df, headers="keys", tablefmt="github", showindex=False))
-
-df.to_csv("odds_latest.csv", index=False)
-print("\n✅ Data opgeslagen in odds_latest.csv")
+# ✅ Verwerk resultaat
+if response.status_code == 200:
+    data = response.json()
+    df = pd.json_normalize(data)
+    df.to_csv("odds_latest.csv", index=False)
+    print("✅ Odds opgeslagen in odds_latest.csv")
+else:
+    print(f"❌ Fout ({response.status_code}): {response.text}")

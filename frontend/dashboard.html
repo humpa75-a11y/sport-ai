@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎯 Sport AI Sync - Live Dashboard</title>
+    <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #fff;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+        }
+
+        h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .status {
+            display: inline-block;
+            padding: 5px 15px;
+            background: #10b981;
+            border-radius: 20px;
+            font-size: 0.9em;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+        }
+
+        .card h2 {
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .stat-box {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 10px;
+        }
+
+        .stat-label {
+            font-size: 0.9em;
+            opacity: 0.8;
+            margin-bottom: 5px;
+        }
+
+        .stat-value {
+            font-size: 2em;
+            font-weight: bold;
+        }
+
+        .positive {
+            color: #10b981;
+        }
+
+        .negative {
+            color: #ef4444;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        th {
+            background: rgba(255, 255, 255, 0.1);
+            font-weight: 600;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 0.85em;
+            font-weight: 500;
+        }
+
+        .badge-success {
+            background: #10b981;
+        }
+
+        .badge-warning {
+            background: #f59e0b;
+        }
+
+        .badge-danger {
+            background: #ef4444;
+        }
+
+        .badge-info {
+            background: #3b82f6;
+        }
+
+        .alert {
+            background: rgba(239, 68, 68, 0.2);
+            border-left: 4px solid #ef4444;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+        }
+
+        .alert-value {
+            background: rgba(16, 185, 129, 0.2);
+            border-left: 4px solid #10b981;
+        }
+
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: 600;
+            transition: transform 0.2s;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .refresh-btn {
+            margin-top: 10px;
+            width: 100%;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 20px;
+            opacity: 0.7;
+        }
+
+        .prediction-row {
+            background: rgba(255, 255, 255, 0.05);
+            margin-bottom: 10px;
+            padding: 15px;
+            border-radius: 8px;
+            transition: background 0.3s;
+        }
+
+        .prediction-row:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .match-title {
+            font-size: 1.1em;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .prediction-details {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            font-size: 0.9em;
+        }
+
+        .detail-item {
+            display: flex;
+            gap: 5px;
+        }
+
+        .detail-label {
+            opacity: 0.7;
+        }
+
+        .connection-status {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 0.9em;
+        }
+
+        @media (max-width: 768px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
+            
+            h1 {
+                font-size: 1.8em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🎯 Sport AI Sync - Live Dashboard</h1>
+            <span class="status">🟢 LIVE</span>
+            <p style="margin-top: 10px; opacity: 0.8;">Real-Time Intelligent Betting System</p>
+        </header>
+
+        <!-- Stats Grid -->
+        <div class="grid">
+            <!-- Bankroll Card -->
+            <div class="card">
+                <h2>💰 Bankroll</h2>
+                <div class="stat-box">
+                    <div class="stat-label">Current Balance</div>
+                    <div class="stat-value" id="bankroll-current">€1,000.00</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-label">Total ROI</div>
+                    <div class="stat-value positive" id="bankroll-roi">+0.0%</div>
+                </div>
+                <div style="display: flex; gap: 10px; margin-top: 10px;">
+                    <div style="flex: 1;">
+                        <div class="stat-label">Win Rate</div>
+                        <div id="bankroll-winrate">0.0%</div>
+                    </div>
+                    <div style="flex: 1;">
+                        <div class="stat-label">Total Bets</div>
+                        <div id="bankroll-bets">0</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Alerts Card -->
+            <div class="card">
+                <h2>🚨 Active Alerts</h2>
+                <div id="alerts-container">
+                    <div class="loading">Loading alerts...</div>
+                </div>
+                <button class="refresh-btn" onclick="loadAlerts()">🔄 Refresh Alerts</button>
+            </div>
+
+            <!-- Best Markets Card -->
+            <div class="card">
+                <h2>📊 Top Markets (ROI)</h2>
+                <div id="markets-container">
+                    <div class="loading">Loading markets...</div>
+                </div>
+                <button class="refresh-btn" onclick="loadROI()">🔄 Refresh ROI</button>
+            </div>
+        </div>
+
+        <!-- Predictions Card (Full Width) -->
+        <div class="card" style="margin-bottom: 20px;">
+            <h2>⚽ Live Predictions</h2>
+            <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+                <select id="league-select" style="padding: 8px; border-radius: 5px; background: rgba(255,255,255,0.1); color: white; border: 1px solid rgba(255,255,255,0.2);">
+                    <option value="bundesliga">🇩🇪 Bundesliga</option>
+                    <option value="premier-league">🏴󠁧󠁢󠁥󠁮󠁧󠁿 Premier League</option>
+                    <option value="la-liga">🇪🇸 La Liga</option>
+                    <option value="serie-a">🇮🇹 Serie A</option>
+                </select>
+                <button onclick="loadPredictions()">🔄 Load Predictions</button>
+            </div>
+            <div id="predictions-container">
+                <div class="loading">Select a league and click Load Predictions</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Connection Status -->
+    <div class="connection-status" id="connection-status">
+        🔌 Connecting to server...
+    </div>
+
+    <script>
+        // API Base URL
+        const API_URL = 'http://localhost:5000';
+        
+        // WebSocket connection
+        let socket;
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            connectWebSocket();
+            loadBankroll();
+            loadAlerts();
+            loadROI();
+        });
+
+        // WebSocket Connection
+        function connectWebSocket() {
+            socket = io(API_URL);
+
+            socket.on('connect', () => {
+                console.log('✅ Connected to server');
+                updateConnectionStatus('🟢 Connected', true);
+                socket.emit('subscribe_updates');
+            });
+
+            socket.on('disconnect', () => {
+                console.log('❌ Disconnected from server');
+                updateConnectionStatus('🔴 Disconnected', false);
+            });
+
+            socket.on('predictions_update', (data) => {
+                console.log('📊 Predictions updated');
+                displayPredictions(data);
+            });
+
+            socket.on('odds_alert', (data) => {
+                console.log('🚨 Odds alert:', data);
+                loadAlerts();
+                showNotification('Odds Alert', 'New value opportunity detected!');
+            });
+
+            socket.on('bet_logged', (data) => {
+                console.log('💰 Bet logged:', data);
+                loadBankroll();
+                loadROI();
+            });
+        }
+
+        function updateConnectionStatus(text, connected) {
+            const status = document.getElementById('connection-status');
+            status.textContent = text;
+            status.style.background = connected ? 'rgba(16, 185, 129, 0.8)' : 'rgba(239, 68, 68, 0.8)';
+        }
+
+        // Load Bankroll
+        async function loadBankroll() {
+            try {
+                const response = await fetch(`${API_URL}/api/bankroll`);
+                const data = await response.json();
+
+                document.getElementById('bankroll-current').textContent = `€${data.current_bankroll.toFixed(2)}`;
+                document.getElementById('bankroll-roi').textContent = `${data.roi >= 0 ? '+' : ''}${data.roi.toFixed(1)}%`;
+                document.getElementById('bankroll-roi').className = `stat-value ${data.roi >= 0 ? 'positive' : 'negative'}`;
+                document.getElementById('bankroll-winrate').textContent = `${data.win_rate.toFixed(1)}%`;
+                document.getElementById('bankroll-bets').textContent = data.total_bets;
+            } catch (error) {
+                console.error('Error loading bankroll:', error);
+            }
+        }
+
+        // Load Alerts
+        async function loadAlerts() {
+            try {
+                const response = await fetch(`${API_URL}/api/alerts`);
+                const data = await response.json();
+                
+                const container = document.getElementById('alerts-container');
+                
+                if (data.all_alerts.length === 0) {
+                    container.innerHTML = '<div style="opacity: 0.7; text-align: center; padding: 20px;">No active alerts</div>';
+                    return;
+                }
+
+                container.innerHTML = data.all_alerts.slice(0, 3).map(alert => `
+                    <div class="alert ${alert.alert_type === 'VALUE_OPPORTUNITY' ? 'alert-value' : ''}">
+                        <div style="font-weight: 600; margin-bottom: 5px;">
+                            ${alert.emoji} ${alert.match_name}
+                        </div>
+                        <div style="font-size: 0.9em;">
+                            ${alert.market}: ${alert.old_odds} → ${alert.new_odds} (${alert.movement_pct > 0 ? '+' : ''}${alert.movement_pct.toFixed(1)}%)
+                        </div>
+                        ${alert.ev ? `<div style="font-size: 0.85em; margin-top: 5px; opacity: 0.9;">EV: ${(alert.ev * 100).toFixed(1)}%</div>` : ''}
+                    </div>
+                `).join('');
+            } catch (error) {
+                console.error('Error loading alerts:', error);
+                document.getElementById('alerts-container').innerHTML = '<div style="color: #ef4444;">Error loading alerts</div>';
+            }
+        }
+
+        // Load ROI by Market
+        async function loadROI() {
+            try {
+                const response = await fetch(`${API_URL}/api/roi`);
+                const data = await response.json();
+                
+                const container = document.getElementById('markets-container');
+                
+                if (!data.best_markets || data.best_markets.length === 0) {
+                    container.innerHTML = '<div style="opacity: 0.7; text-align: center; padding: 20px;">No market data yet</div>';
+                    return;
+                }
+
+                container.innerHTML = data.best_markets.slice(0, 5).map((market, idx) => `
+                    <div style="margin-bottom: 10px; padding: 10px; background: rgba(255,255,255,0.05); border-radius: 8px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <div style="font-weight: 600;">${idx + 1}. ${market.market}</div>
+                                <div style="font-size: 0.85em; opacity: 0.8;">${market.total_bets} bets • ${market.win_rate.toFixed(0)}% wins</div>
+                            </div>
+                            <div style="text-align: right;">
+                                <div style="font-size: 1.3em; font-weight: 600;" class="${market.roi >= 0 ? 'positive' : 'negative'}">
+                                    ${market.roi >= 0 ? '+' : ''}${market.roi.toFixed(1)}%
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+            } catch (error) {
+                console.error('Error loading ROI:', error);
+                document.getElementById('markets-container').innerHTML = '<div style="color: #ef4444;">Error loading ROI data</div>';
+            }
+        }
+
+        // Load Predictions
+        async function loadPredictions() {
+            const league = document.getElementById('league-select').value;
+            const container = document.getElementById('predictions-container');
+            
+            container.innerHTML = '<div class="loading">⏳ Loading predictions...</div>';
+
+            try {
+                const response = await fetch(`${API_URL}/api/predictions?league=${league}&days_ahead=2`);
+                const data = await response.json();
+                
+                if (data.error) {
+                    container.innerHTML = `<div style="color: #ef4444;">Error: ${data.error}</div>`;
+                    return;
+                }
+
+                displayPredictions(data);
+            } catch (error) {
+                console.error('Error loading predictions:', error);
+                container.innerHTML = '<div style="color: #ef4444;">Error loading predictions. Make sure backend is running.</div>';
+            }
+        }
+
+        function displayPredictions(data) {
+            const container = document.getElementById('predictions-container');
+            
+            if (!data.matches || data.matches.length === 0) {
+                container.innerHTML = '<div style="opacity: 0.7; text-align: center; padding: 20px;">No matches found</div>';
+                return;
+            }
+
+            container.innerHTML = data.matches.map(match => `
+                <div class="prediction-row">
+                    <div class="match-title">
+                        ⚽ ${match.home_team} vs ${match.away_team}
+                    </div>
+                    <div style="font-size: 0.85em; opacity: 0.7; margin-bottom: 10px;">
+                        📅 ${match.match_date} ${match.match_time}
+                    </div>
+                    <div class="prediction-details">
+                        ${match.predictions.slice(0, 3).map(pred => `
+                            <div class="detail-item">
+                                <span class="detail-label">${pred.market}:</span>
+                                <span style="font-weight: 600;">${pred.prediction}</span>
+                                <span class="badge ${pred.ev_pct > 5 ? 'badge-success' : 'badge-info'}">
+                                    ${pred.probability.toFixed(0)}%
+                                </span>
+                                <span style="opacity: 0.8;">@ ${pred.odds.toFixed(2)}</span>
+                                ${pred.ev_pct > 5 ? '<span style="color: #10b981;">💎 VALUE</span>' : ''}
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Browser Notifications
+        function showNotification(title, message) {
+            if ('Notification' in window && Notification.permission === 'granted') {
+                new Notification(title, {
+                    body: message,
+                    icon: '🎯'
+                });
+            }
+        }
+
+        // Request notification permission
+        if ('Notification' in window && Notification.permission === 'default') {
+            Notification.requestPermission();
+        }
+
+        // Auto-refresh every 5 minutes
+        setInterval(() => {
+            loadBankroll();
+            loadAlerts();
+            loadROI();
+        }, 300000); // 5 minutes
+    </script>
+</body>
+</html>

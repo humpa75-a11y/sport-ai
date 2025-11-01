@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎓 Professor De Meester - AI Football Predictions</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        :root {
+            --professor-primary: #1e3a8a;
+            --professor-secondary: #3b82f6;
+            --professor-gold: #fbbf24;
+            --eerste-divisie: #dc2626;
+            --eredivisie: #f97316;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: #fff;
+        }
+        
+        /* PROFESSOR HEADER */
+        .professor-header {
+            background: rgba(0,0,0,0.3);
+            backdrop-filter: blur(15px);
+            padding: 30px 0;
+            border-bottom: 3px solid var(--professor-gold);
+            box-shadow: 0 8px 40px rgba(0,0,0,0.3);
+        }
+        
+        .professor-avatar {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--professor-gold), #f59e0b);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 50px;
+            border: 5px solid white;
+            box-shadow: 0 0 30px rgba(251, 191, 36, 0.5);
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+        
+        .professor-title {
+            font-size: 2.5rem;
+            font-weight: 800;
+            background: linear-gradient(90deg, #fbbf24, #f59e0b);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 2px 20px rgba(251, 191, 36, 0.3);
+        }
+        
+        .professor-stats {
+            background: rgba(255,255,255,0.1);
+            border-radius: 15px;
+            padding: 15px;
+            margin-top: 20px;
+        }
+        
+        .stat-badge {
+            background: rgba(251, 191, 36, 0.2);
+            border: 2px solid var(--professor-gold);
+            border-radius: 10px;
+            padding: 10px 20px;
+            display: inline-block;
+            margin: 5px;
+        }
+        
+        /* LEAGUES SECTION */
+        .leagues-container {
+            margin: 40px 0;
+        }
+        
+        .league-card {
+            background: rgba(255,255,255,0.95);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            color: #1a1a2e;
+            transition: transform 0.3s ease;
+        }
+        
+        .league-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .league-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 25px;
+            padding-bottom: 20px;
+            border-bottom: 3px solid;
+        }
+        
+        .eredivisie-card .league-header {
+            border-color: var(--eredivisie);
+        }
+        
+        .eerste-divisie-card .league-header {
+            border-color: var(--eerste-divisie);
+        }
+        
+        .league-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 30px;
+            border: 3px solid;
+        }
+        
+        .eredivisie-card .league-icon {
+            background: var(--eredivisie);
+            border-color: var(--eredivisie);
+            color: white;
+        }
+        
+        .eerste-divisie-card .league-icon {
+            background: var(--eerste-divisie);
+            border-color: var(--eerste-divisie);
+            color: white;
+        }
+        
+        .league-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin: 0;
+        }
+        
+        .league-subtitle {
+            color: #666;
+            font-size: 0.9rem;
+        }
+        
+        /* PREDICTION FORM */
+        .prediction-form {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 20px;
+        }
+        
+        .team-select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e5e7eb;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: all 0.3s;
+        }
+        
+        .team-select:focus {
+            outline: none;
+            border-color: var(--professor-secondary);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+        
+        .vs-divider {
+            text-align: center;
+            font-size: 2rem;
+            font-weight: 800;
+            color: var(--professor-primary);
+            margin: 15px 0;
+        }
+        
+        .predict-btn {
+            width: 100%;
+            padding: 15px;
+            font-size: 1.2rem;
+            font-weight: 700;
+            border: none;
+            border-radius: 10px;
+            background: linear-gradient(135deg, var(--professor-primary), var(--professor-secondary));
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .predict-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(59, 130, 246, 0.4);
+        }
+        
+        /* PREDICTION RESULT */
+        .prediction-result {
+            background: linear-gradient(135deg, var(--professor-gold), #f59e0b);
+            border-radius: 15px;
+            padding: 30px;
+            margin-top: 20px;
+            text-align: center;
+            display: none;
+        }
+        
+        .prediction-score {
+            font-size: 4rem;
+            font-weight: 900;
+            color: var(--professor-primary);
+            margin: 20px 0;
+        }
+        
+        .confidence-badge {
+            background: rgba(30, 58, 138, 0.2);
+            border: 2px solid var(--professor-primary);
+            border-radius: 20px;
+            padding: 10px 25px;
+            display: inline-block;
+            font-weight: 700;
+        }
+        
+        /* LOADING SPINNER */
+        .loading-spinner {
+            border: 4px solid #f3f4f6;
+            border-top: 4px solid var(--professor-secondary);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+            display: none;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* RESPONSIVE */
+        @media (max-width: 768px) {
+            .professor-title {
+                font-size: 1.8rem;
+            }
+            
+            .league-title {
+                font-size: 1.4rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- PROFESSOR HEADER -->
+    <div class="professor-header">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-auto">
+                    <div class="professor-avatar">
+                        🎓
+                    </div>
+                </div>
+                <div class="col">
+                    <h1 class="professor-title mb-0">Professor De Meester</h1>
+                    <p class="mb-0 opacity-75">Master of All Football Predictions</p>
+                </div>
+            </div>
+            
+            <div class="professor-stats">
+                <div class="row text-center">
+                    <div class="col-md-3 col-6">
+                        <div class="stat-badge">
+                            <i class="bi bi-database-fill"></i>
+                            <strong id="training-matches">6548</strong> Matches
+                        </div>
+                    </div>
+                    <div class="col-md-3 col-6">
+                        <div class="stat-badge">
+                            <i class="bi bi-bullseye"></i>
+                            <strong id="accuracy">9.69%</strong> Accuracy
+                        </div>
+                    </div>
+                    <div class="col-md-3 col-6">
+                        <div class="stat-badge">
+                            <i class="bi bi-trophy-fill"></i>
+                            <strong>5-Model</strong> Ensemble
+                        </div>
+                    </div>
+                    <div class="col-md-3 col-6">
+                        <div class="stat-badge">
+                            <i class="bi bi-lightning-fill"></i>
+                            <strong>Live</strong> Features
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- LEAGUES CONTAINER -->
+    <div class="container leagues-container">
+        <!-- EREDIVISIE SECTION -->
+        <div class="league-card eredivisie-card">
+            <div class="league-header">
+                <div class="league-icon">
+                    ⚽
+                </div>
+                <div>
+                    <h2 class="league-title">EREDIVISIE</h2>
+                    <p class="league-subtitle mb-0">Hoogste Nederlandse Voetbalcompetitie</p>
+                </div>
+            </div>
+            
+            <div class="prediction-form">
+                <div class="row">
+                    <div class="col-md-5">
+                        <label class="form-label fw-bold">Thuisteam</label>
+                        <select class="team-select eredivisie-home" id="eredivisie-home">
+                            <option value="">Selecteer team...</option>
+                            <option value="Ajax">Ajax</option>
+                            <option value="PSV">PSV</option>
+                            <option value="Feyenoord">Feyenoord</option>
+                            <option value="AZ Alkmaar">AZ Alkmaar</option>
+                            <option value="FC Twente">FC Twente</option>
+                            <option value="FC Utrecht">FC Utrecht</option>
+                            <option value="Sparta Rotterdam">Sparta Rotterdam</option>
+                            <option value="Go Ahead Eagles">Go Ahead Eagles</option>
+                            <option value="Fortuna Sittard">Fortuna Sittard</option>
+                            <option value="NEC Nijmegen">NEC Nijmegen</option>
+                            <option value="Heracles">Heracles</option>
+                            <option value="PEC Zwolle">PEC Zwolle</option>
+                            <option value="FC Groningen">FC Groningen</option>
+                            <option value="SC Heerenveen">SC Heerenveen</option>
+                            <option value="Almere City">Almere City</option>
+                            <option value="RKC Waalwijk">RKC Waalwijk</option>
+                            <option value="Willem II">Willem II</option>
+                            <option value="NAC Breda">NAC Breda</option>
+                        </select>
+                    </div>
+                    
+                    <div class="col-md-2">
+                        <div class="vs-divider">VS</div>
+                    </div>
+                    
+                    <div class="col-md-5">
+                        <label class="form-label fw-bold">Uitteam</label>
+                        <select class="team-select eredivisie-away" id="eredivisie-away">
+                            <option value="">Selecteer team...</option>
+                            <option value="Ajax">Ajax</option>
+                            <option value="PSV">PSV</option>
+                            <option value="Feyenoord">Feyenoord</option>
+                            <option value="AZ Alkmaar">AZ Alkmaar</option>
+                            <option value="FC Twente">FC Twente</option>
+                            <option value="FC Utrecht">FC Utrecht</option>
+                            <option value="Sparta Rotterdam">Sparta Rotterdam</option>
+                            <option value="Go Ahead Eagles">Go Ahead Eagles</option>
+                            <option value="Fortuna Sittard">Fortuna Sittard</option>
+                            <option value="NEC Nijmegen">NEC Nijmegen</option>
+                            <option value="Heracles">Heracles</option>
+                            <option value="PEC Zwolle">PEC Zwolle</option>
+                            <option value="FC Groningen">FC Groningen</option>
+                            <option value="SC Heerenveen">SC Heerenveen</option>
+                            <option value="Almere City">Almere City</option>
+                            <option value="RKC Waalwijk">RKC Waalwijk</option>
+                            <option value="Willem II">Willem II</option>
+                            <option value="NAC Breda">NAC Breda</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <button class="predict-btn mt-4" onclick="predictMatch('eredivisie')">
+                    <i class="bi bi-magic"></i> Voorspel Eredivisie Wedstrijd
+                </button>
+                
+                <div class="loading-spinner" id="eredivisie-spinner"></div>
+                
+                <div class="prediction-result" id="eredivisie-result">
+                    <h3 class="mb-3">🎓 Professor's Voorspelling</h3>
+                    <div class="prediction-score" id="eredivisie-score">2 - 1</div>
+                    <div class="confidence-badge" id="eredivisie-confidence">
+                        <i class="bi bi-graph-up"></i> Betrouwbaarheid: 85%
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- EERSTE DIVISIE SECTION -->
+        <div class="league-card eerste-divisie-card">
+            <div class="league-header">
+                <div class="league-icon">
+                    🔴
+                </div>
+                <div>
+                    <h2 class="league-title">EERSTE DIVISIE [NL]</h2>
+                    <p class="league-subtitle mb-0">Nederlandse Tweede Divisie - KEI HARD SLAAN!</p>
+                </div>
+            </div>
+            
+            <div class="prediction-form">
+                <div class="row">
+                    <div class="col-md-5">
+                        <label class="form-label fw-bold">Thuisteam</label>
+                        <select class="team-select eerste-divisie-home" id="eerste-home">
+                            <option value="">Selecteer team...</option>
+                            <option value="FC Eindhoven">FC Eindhoven</option>
+                            <option value="Helmond Sport">Helmond Sport</option>
+                            <option value="Jong PSV">Jong PSV</option>
+                            <option value="FC Dordrecht">FC Dordrecht</option>
+                            <option value="De Graafschap">De Graafschap</option>
+                            <option value="FC Den Bosch">FC Den Bosch</option>
+                            <option value="MVV Maastricht">MVV Maastricht</option>
+                            <option value="Jong Ajax">Jong Ajax</option>
+                            <option value="Telstar">Telstar</option>
+                            <option value="ADO Den Haag">ADO Den Haag</option>
+                            <option value="FC Volendam">FC Volendam</option>
+                            <option value="TOP Oss">TOP Oss</option>
+                            <option value="Roda JC">Roda JC</option>
+                            <option value="Jong AZ">Jong AZ</option>
+                            <option value="Jong Utrecht">Jong Utrecht</option>
+                            <option value="Excelsior">Excelsior</option>
+                            <option value="VVV-Venlo">VVV-Venlo</option>
+                            <option value="Cambuur">Cambuur</option>
+                        </select>
+                    </div>
+                    
+                    <div class="col-md-2">
+                        <div class="vs-divider">VS</div>
+                    </div>
+                    
+                    <div class="col-md-5">
+                        <label class="form-label fw-bold">Uitteam</label>
+                        <select class="team-select eerste-divisie-away" id="eerste-away">
+                            <option value="">Selecteer team...</option>
+                            <option value="FC Eindhoven">FC Eindhoven</option>
+                            <option value="Helmond Sport">Helmond Sport</option>
+                            <option value="Jong PSV">Jong PSV</option>
+                            <option value="FC Dordrecht">FC Dordrecht</option>
+                            <option value="De Graafschap">De Graafschap</option>
+                            <option value="FC Den Bosch">FC Den Bosch</option>
+                            <option value="MVV Maastricht">MVV Maastricht</option>
+                            <option value="Jong Ajax">Jong Ajax</option>
+                            <option value="Telstar">Telstar</option>
+                            <option value="ADO Den Haag">ADO Den Haag</option>
+                            <option value="FC Volendam">FC Volendam</option>
+                            <option value="TOP Oss">TOP Oss</option>
+                            <option value="Roda JC">Roda JC</option>
+                            <option value="Jong AZ">Jong AZ</option>
+                            <option value="Jong Utrecht">Jong Utrecht</option>
+                            <option value="Excelsior">Excelsior</option>
+                            <option value="VVV-Venlo">VVV-Venlo</option>
+                            <option value="Cambuur">Cambuur</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <button class="predict-btn mt-4" onclick="predictMatch('eerste')">
+                    <i class="bi bi-lightning-charge-fill"></i> Voorspel Eerste Divisie Wedstrijd
+                </button>
+                
+                <div class="loading-spinner" id="eerste-spinner"></div>
+                
+                <div class="prediction-result" id="eerste-result">
+                    <h3 class="mb-3">🎓 Professor's Voorspelling</h3>
+                    <div class="prediction-score" id="eerste-score">2 - 1</div>
+                    <div class="confidence-badge" id="eerste-confidence">
+                        <i class="bi bi-graph-up"></i> Betrouwbaarheid: 85%
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // API BASE URL
+        const API_URL = 'http://127.0.0.1:5000/api';
+        
+        // Load Professor stats on page load
+        window.addEventListener('DOMContentLoaded', async () => {
+            try {
+                const response = await fetch(`${API_URL}/status`);
+                const data = await response.json();
+                
+                if (data.statistics) {
+                    document.getElementById('training-matches').textContent = data.statistics.training_matches || '6548';
+                    document.getElementById('accuracy').textContent = (data.statistics.model_accuracy || 9.69).toFixed(2) + '%';
+                }
+            } catch (error) {
+                console.error('Error loading stats:', error);
+            }
+        });
+        
+        // Predict Match Function
+        async function predictMatch(league) {
+            const homeSelect = document.getElementById(`${league}-home`);
+            const awaySelect = document.getElementById(`${league}-away`);
+            const spinner = document.getElementById(`${league}-spinner`);
+            const result = document.getElementById(`${league}-result`);
+            const scoreDiv = document.getElementById(`${league}-score`);
+            const confidenceDiv = document.getElementById(`${league}-confidence`);
+            
+            const homeTeam = homeSelect.value;
+            const awayTeam = awaySelect.value;
+            
+            if (!homeTeam || !awayTeam) {
+                alert('Selecteer beide teams!');
+                return;
+            }
+            
+            if (homeTeam === awayTeam) {
+                alert('Teams moeten verschillend zijn!');
+                return;
+            }
+            
+            // Show spinner
+            spinner.style.display = 'block';
+            result.style.display = 'none';
+            
+            try {
+                const response = await fetch(`${API_URL}/predict`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        home_team: homeTeam,
+                        away_team: awayTeam
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.error) {
+                    alert('Error: ' + data.error);
+                    return;
+                }
+                
+                // Update result
+                const prediction = data.prediction;
+                scoreDiv.textContent = `${prediction.expected_home_goals} - ${prediction.expected_away_goals}`;
+                confidenceDiv.innerHTML = `<i class="bi bi-graph-up"></i> Betrouwbaarheid: ${prediction.confidence_factor.toFixed(1)}%`;
+                
+                // Show result
+                result.style.display = 'block';
+                
+            } catch (error) {
+                alert('Fout bij voorspelling: ' + error.message);
+            } finally {
+                spinner.style.display = 'none';
+            }
+        }
+    </script>
+</body>
+</html>

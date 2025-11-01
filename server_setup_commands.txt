@@ -1,0 +1,161 @@
+# 🚀 SPORT AI SERVER SETUP - COMMANDS
+# Kopieer en plak deze commands één voor één in je SSH terminal
+# Server: 206.189.101.98
+
+# ============================================
+# STAP 1: UPDATE SYSTEEM (2 minuten)
+# ============================================
+apt update && apt upgrade -y
+
+# ============================================
+# STAP 2: INSTALLEER DEPENDENCIES (5 minuten)
+# ============================================
+apt install -y python3.11 python3-pip python3.11-venv git nginx supervisor ufw curl
+
+# ============================================
+# STAP 3: CLONE GITHUB REPOSITORY
+# ============================================
+cd /root
+git clone https://github.com/humpa75-a11y/sport-ai.git
+cd sport-ai
+
+# ============================================
+# STAP 4: SETUP PYTHON ENVIRONMENT (3 minuten)
+# ============================================
+python3 -m venv venv
+source venv/bin/activate
+pip install --upgrade pip
+pip install flask flask-cors flask-socketio requests pandas numpy scipy scikit-learn xgboost beautifulsoup4 lxml python-dateutil gunicorn
+
+# ============================================
+# STAP 5: MAAK .ENV FILE MET API KEYS
+# ============================================
+cat > /root/sport-ai/.env << 'EOF'
+# API Keys
+API_FOOTBALL_KEY=eec52f29ffbc24effa9bc0e7963a8cd9
+FOOTBALL_DATA_ORG_KEY=d5513a02070e4dbba002d3f5c9a78942
+
+# Flask settings
+FLASK_ENV=production
+SECRET_KEY=sport-ai-secret-key-777hermiss-2025
+
+# Server settings
+HOST=0.0.0.0
+PORT=5000
+EOF
+
+chmod 600 /root/sport-ai/.env
+
+# ============================================
+# STAP 6: CONFIGUREER NGINX (reverse proxy)
+# ============================================
+cat > /etc/nginx/sites-available/sportai << 'EOF'
+server {
+    listen 80;
+    server_name 206.189.101.98;
+
+    location / {
+        proxy_pass http://127.0.0.1:5000;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_connect_timeout 300s;
+        proxy_send_timeout 300s;
+        proxy_read_timeout 300s;
+    }
+
+    location /socket.io {
+        proxy_pass http://127.0.0.1:5000/socket.io;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+        proxy_set_header Host $host;
+        proxy_cache_bypass $http_upgrade;
+    }
+}
+EOF
+
+# Enable site en restart Nginx
+rm -f /etc/nginx/sites-enabled/default
+ln -sf /etc/nginx/sites-available/sportai /etc/nginx/sites-enabled/
+nginx -t
+systemctl restart nginx
+
+# ============================================
+# STAP 7: SETUP SUPERVISOR (24/7 uptime)
+# ============================================
+mkdir -p /var/log/sportai
+
+cat > /etc/supervisor/conf.d/sportai.conf << 'EOF'
+[program:sportai]
+directory=/root/sport-ai
+command=/root/sport-ai/venv/bin/python backend/api_server.py
+user=root
+autostart=true
+autorestart=true
+stopasgroup=true
+killasgroup=true
+stderr_logfile=/var/log/sportai/error.log
+stdout_logfile=/var/log/sportai/access.log
+environment=PATH="/root/sport-ai/venv/bin"
+EOF
+
+# Start de app
+supervisorctl reread
+supervisorctl update
+supervisorctl start sportai
+
+# ============================================
+# STAP 8: CONFIGUREER FIREWALL
+# ============================================
+ufw --force enable
+ufw allow OpenSSH
+ufw allow 80/tcp
+ufw allow 443/tcp
+ufw status
+
+# ============================================
+# STAP 9: SETUP CRON JOBS (automation)
+# ============================================
+cat > /root/sportai_cron.sh << 'EOF'
+#!/bin/bash
+# Daily AI Training (3 AM)
+0 3 * * * /root/sport-ai/venv/bin/python /root/sport-ai/backend/multi_source_aggregator.py >> /var/log/sportai/cron.log 2>&1
+
+# Match Updates (Every 6 hours)
+0 */6 * * * /root/sport-ai/venv/bin/python /root/sport-ai/backend/multi_source_aggregator.py >> /var/log/sportai/matches.log 2>&1
+EOF
+
+crontab /root/sportai_cron.sh
+
+# ============================================
+# STAP 10: CHECK STATUS
+# ============================================
+echo "=================================="
+echo "🎯 CHECKING SYSTEM STATUS..."
+echo "=================================="
+echo ""
+echo "1. Nginx status:"
+systemctl status nginx --no-pager | head -n 5
+echo ""
+echo "2. SportAI app status:"
+supervisorctl status sportai
+echo ""
+echo "3. Firewall status:"
+ufw status numbered
+echo ""
+echo "=================================="
+echo "✅ SETUP COMPLETE!"
+echo "=================================="
+echo ""
+echo "🌐 Test je app op: http://206.189.101.98"
+echo ""
+echo "📝 Logs bekijken:"
+echo "   tail -f /var/log/sportai/access.log"
+echo "   tail -f /var/log/sportai/error.log"
+echo ""
+echo "🔄 App herstarten:"
+echo "   supervisorctl restart sportai"
+echo ""
+echo "=================================="
